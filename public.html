@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cafe Premium - Đặt bàn quán cà phê</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="csscode/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="index.html">
+                <img src="img/avata.jpg" alt="Cafe Premium Logo" class="me-2" style="width: 40px; height: 40px; border-radius: 50%;">
+                <span class="fw-bold text-dark fs-4">Cafe Premium</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#menu">Menu</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#tables">Bàn trống</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#reservation">Đặt bàn</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="login.html" style="display: none;">Quản trị</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero bg-light py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h1 class="display-4">Chào mừng đến với Cafe Premium</h1>
+                    <p class="lead">Đặt bàn và thưởng thức đồ uống ngon tại quán cà phê của chúng tôi</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Menu Section -->
+    <section id="menu" class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-4">Menu đồ uống</h2>
+
+            <!-- Filter Buttons -->
+            <div class="d-flex justify-content-center mb-4">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary active" data-filter="all">Tất cả</button>
+                    <button type="button" class="btn btn-outline-primary" data-filter="coffee">Cà phê</button>
+                    <button type="button" class="btn btn-outline-primary" data-filter="tea">Trà</button>
+                    <button type="button" class="btn btn-outline-primary" data-filter="juice">Sinh tố</button>
+                </div>
+                <button id="refreshMenuBtn" type="button" class="btn btn-outline-secondary ms-3">Tải lại menu</button>
+                <div id="jqueryStatus" class="text-muted mt-2">Đang kiểm tra jQuery...</div>
+            </div>
+
+            <!-- Menu Items -->
+            <div id="menuContainer" class="row">
+                <!-- Menu items will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Tables Section -->
+    <section id="tables" class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-4">Sơ đồ bàn</h2>
+            <p class="text-center text-muted mb-4">Nhấn vào bàn để chọn nhanh trong form đặt bàn.</p>
+            <div id="tableMap" class="table-map mb-4">
+                <!-- Table map will be loaded here -->
+            </div>
+            <div class="table-legend d-flex justify-content-center gap-3 mb-4">
+                <span class="legend-item"><span class="legend-color legend-available"></span> Trống</span>
+                <span class="legend-item"><span class="legend-color legend-reserved"></span> Đã đặt</span>
+                <span class="legend-item"><span class="legend-color legend-selected"></span> Đang chọn</span>
+            </div>
+            <div class="d-flex justify-content-center gap-2 mb-4">
+                <button type="button" class="btn btn-outline-primary active floor-toggle" data-floor="1">Tầng 1</button>
+                <button type="button" class="btn btn-outline-primary floor-toggle" data-floor="2">Tầng 2</button>
+            </div>
+            <div class="row floor-plans g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="floor-card card p-3 h-100">
+                        <h5 class="text-center mb-3">Sơ đồ Tầng 1</h5>
+                        <div class="floor-image" id="floor1Image"></div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="floor-card card p-3 h-100">
+                        <h5 class="text-center mb-3">Sơ đồ Tầng 2</h5>
+                        <div class="floor-image" id="floor2Image"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="tablesContainer" class="row">
+                <!-- Tables will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Reservation Section -->
+    <section id="reservation" class="py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-6">
+                    <h2 class="text-center mb-4">Đặt bàn</h2>
+                    <form id="reservationForm" class="card p-4 shadow">
+                        <div class="mb-3">
+                            <label for="guestName" class="form-label">Họ tên *</label>
+                            <input type="text" class="form-control" id="guestName" placeholder="Nhập họ tên" required>
+                            <div class="invalid-feedback">Vui lòng nhập họ tên</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Số điện thoại *</label>
+                            <input type="tel" class="form-control" id="phone" placeholder="Nhập số điện thoại" required>
+                            <div class="invalid-feedback">Vui lòng nhập số điện thoại</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" placeholder="Nhập email (nếu có)">
+                        </div>
+                        <div class="mb-3">
+                            <label for="reservationDate" class="form-label">Ngày đặt *</label>
+                            <input type="date" class="form-control" id="reservationDate" required>
+                            <div class="invalid-feedback">Vui lòng chọn ngày đặt</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reservationTime" class="form-label">Giờ đặt *</label>
+                            <select class="form-select" id="reservationTime" required>
+                                <option value="">Chọn giờ</option>
+                                <option value="08:00">08:00</option>
+                                <option value="09:00">09:00</option>
+                                <option value="10:00">10:00</option>
+                                <option value="11:00">11:00</option>
+                                <option value="12:00">12:00</option>
+                                <option value="13:00">13:00</option>
+                                <option value="14:00">14:00</option>
+                                <option value="15:00">15:00</option>
+                                <option value="16:00">16:00</option>
+                                <option value="17:00">17:00</option>
+                                <option value="18:00">18:00</option>
+                                <option value="19:00">19:00</option>
+                                <option value="20:00">20:00</option>
+                                <option value="21:00">21:00</option>
+                            </select>
+                            <div class="invalid-feedback">Vui lòng chọn giờ đặt</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="tableId" class="form-label">Chọn bàn *</label>
+                            <select class="form-select" id="tableId" required>
+                                <option value="">Chọn bàn</option>
+                                <!-- Tables will be loaded here -->
+                            </select>
+                            <div class="invalid-feedback">Vui lòng chọn bàn</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="guests" class="form-label">Số người *</label>
+                            <input type="number" class="form-control" id="guests" min="1" max="10" placeholder="Số khách" required>
+                            <div class="invalid-feedback">Vui lòng nhập số người (1-10)</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Ghi chú</label>
+                            <textarea class="form-control" id="notes" rows="3" placeholder="Ví dụ: ưu tiên bàn gần cửa sổ hoặc yên tĩnh"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Đặt bàn</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4">
+        <div class="container text-center">
+            <p>&copy; 2026 Cafe Premium. Tất cả quyền được bảo lưu.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="jsoncode/api.js"></script>
+    <script src="jsoncode/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+{
+  "name": "cafepremium",
+  "version": "1.0.0",
+  "description": "Coffee shop reservation and menu management system",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "python -m http.server 8000",
+    "build": "echo 'No build step required for static site'",
+    "deploy": "echo 'Deploy manually to Vercel or GitHub Pages'"
+  },
+  "keywords": [
+    "coffee-shop",
+    "reservation",
+    "menu-management",
+    "javascript",
+    "jquery",
+    "bootstrap",
+    "mockapi"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/cafebook.git"
+  },
+  "homepage": "https://yourusername.github.io/cafebook",
+  "devDependencies": {
+    "serve": "^14.2.1"
+  }
+}
