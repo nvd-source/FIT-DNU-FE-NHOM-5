@@ -1,4 +1,6 @@
+/* Cafebook Custom Styles - Starbucks Inspired */
 
+/* Color scheme updated to red theme */
 :root {
     --main-red: #c8102e;
     --main-red-dark: #8a0f1b;
@@ -12,7 +14,6 @@
     --surface-strong: #f8e4e3;
     --border-soft: rgba(200,16,46,0.15);
 }
-
 /* Typography */
 body {
     font-family: 'SoDoSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
