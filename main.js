@@ -271,9 +271,25 @@ function displayTables() {
         return;
     }
 
-    floorTables.forEach(table => {
-        const tableCard = createTableCard(table);
-        tablesContainer.appendChild(tableCard);
+    renderTables(floorTables);
+}
+
+// Render bàn bằng grid layout hiện đại
+function renderTables(tables) {
+    const container = document.getElementById('tableMap');
+    if(!container) return;
+    
+    container.innerHTML = '';
+    tables.forEach(table => {
+        const div = document.createElement('div');
+        // Thêm các class để đồng bộ với CSS mới
+        div.className = `table-node ${table.status.toLowerCase()}`;
+        div.innerHTML = `
+            <span class="fw-bold fs-4">#${table.id}</span>
+            <small class="text-muted"><i class="fas fa-users"></i> ${table.capacity} chỗ</small>
+        `;
+        div.onclick = () => selectTable(table.id);
+        container.appendChild(div);
     });
 }
 
