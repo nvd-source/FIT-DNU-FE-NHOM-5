@@ -14,56 +14,93 @@
     <link href="https://fonts.googleapis.com/css2?family=SoDoSans:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-<!-- Navigation Bar -->
-            <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
-                <div class="container">
-                    <!-- Logo -->
-                 <a class="navbar-brand d-flex align-items-center" href="#">
-          <img
-            src="img/avata.jpg"
-            alt="Cafe Premium Logo"
-            class="me-2"
-            style="width: 40px; height: 40px; border-radius: 50%"
-          />
 
-            <!-- Mobile Toggle -->
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <!-- Navigation Menu -->
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mx-auto">
-                    <li class="nav-item">
-                        <a class="nav-link text-dark fw-semibold px-3" href="#menu">Menu</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark fw-semibold px-3" href="menu.html">Thực đơn</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark fw-semibold px-3" href="#rewards">Ưu đãi</a>
-                    </li>
-                </ul>
+<nav class="navbar navbar-expand-lg navbar-light fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="index.html">
+            <span class="text-dark">CAFE</span><span class="text-danger">PREMIUM</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto gap-4">
+                <li class="nav-item"><a class="nav-link fw-bold" href="menu.html">Menu</a></li>
+                <li class="nav-item"><a class="nav-link fw-bold" href="public.html">Đặt bàn</a></li>
+                <li class="nav-item"><a class="btn btn-primary text-white" href="login.html">Quản trị</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
 
-                <!-- Login Buttons -->
-                <div class="d-flex align-items-center">
-                    <a href="public.html" class="btn btn-outline-dark me-2 px-4">Đăng nhập</a>
-                    <a href="login.html" class="btn btn-dark px-4" style="display: none;">Quản trị</a>
+<header class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <h1 class="hero-title">Đánh thức<br><span class="text-danger">Cảm hứng</span> mỗi ngày.</h1>
+                <p class="lead text-muted mb-5">Trải nghiệm không gian cà phê đẳng cấp cùng hệ thống đặt chỗ thông minh. Tiết kiệm thời gian, trọn vẹn từng khoảnh khắc.</p>
+                <div class="d-flex flex-column flex-sm-row gap-3">
+                    <a href="public.html" class="btn btn-primary btn-lg shadow-lg">Đặt chỗ ngay</a>
+                    <a href="menu.html" class="btn btn-outline-dark btn-lg rounded-pill px-5">Xem thực đơn</a>
+                </div>
+            </div>
+            <div class="col-lg-5 mt-5 mt-lg-0">
+                <div class="hero-image-container">
+                    <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=800&q=80" alt="Coffee" class="img-fluid">
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<section class="features-section py-5">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="display-5 fw-bold mb-3">Tại sao chọn Cafe Premium?</h2>
+                <p class="lead text-muted">Mọi thứ bạn cần cho trải nghiệm cà phê hoàn hảo</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4 h-100">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-coffee fa-3x"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Cà phê cao cấp</h4>
+                    <p class="text-muted">Hạt cà phê tuyển chọn, rang kỹ để mang lại hương vị đậm đà và thơm ngon.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4 h-100">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-calendar-check fa-3x"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Đặt bàn dễ dàng</h4>
+                    <p class="text-muted">Giữ bàn trước, không phải chờ đợi. Đặt chỗ mọi lúc mọi nơi.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4 h-100">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-mobile-alt fa-3x"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Thanh toán nhanh chóng</h4>
+                    <p class="text-muted">Thanh toán linh hoạt, giữ chỗ an toàn và nhận ưu đãi hấp dẫn.</p>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Quick Access Section -->
-<section class="quick-access py-5">
+<section class="quick-access py-5 bg-light">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-8">
                 <div class="text-center mb-5">
-                    <h2 class="display-5 fw-bold text-dark mb-3">Bắt đầu hành trình cà phê</h2>
+                    <h2 class="display-5 fw-bold mb-3">Bắt đầu hành trình cà phê</h2>
                     <p class="lead text-muted">Chọn cách bạn muốn tận hưởng cà phê, trà và đồ uống tươi mát của Cafe Premium.</p>
                 </div>
-
                 <div class="row g-4">
                     <div class="col-md-6">
                         <div class="access-card card border-0 shadow-sm h-100">
@@ -72,12 +109,11 @@
                                     <i class="fas fa-user fa-2x"></i>
                                 </div>
                                 <h5 class="card-title fw-bold mb-3">Người dùng</h5>
-                                <p class="card-text text-muted mb-4">Xem menu, đặt bàn và tận hưởng dịch vụ của chúng tôi</p>
+                                <p class="text-muted mb-4">Xem menu, đặt bàn và tận hưởng dịch vụ của chúng tôi.</p>
                                 <a href="public.html" class="btn btn-primary w-100">Vào trang khách</a>
                             </div>
                         </div>
                     </div>
-
                     <div class="col-md-6">
                         <div class="access-card card border-0 shadow-sm h-100">
                             <div class="card-body text-center p-4">
@@ -85,7 +121,7 @@
                                     <i class="fas fa-cog fa-2x"></i>
                                 </div>
                                 <h5 class="card-title fw-bold mb-3">Quản trị viên</h5>
-                                <p class="card-text text-muted mb-4">Quản lý menu, xử lý đặt bàn, và giám sát hoạt động</p>
+                                <p class="text-muted mb-4">Quản lý đặt bàn, menu và hoạt động cửa hàng.</p>
                                 <a href="login.html" class="btn btn-outline-dark w-100">Vào trang quản trị</a>
                             </div>
                         </div>
@@ -96,7 +132,6 @@
     </div>
 </section>
 
-<!-- Footer -->
 <footer class="bg-dark text-light py-5">
     <div class="container">
         <div class="row">
@@ -109,35 +144,31 @@
                     <a href="#" class="text-light me-3"><i class="fab fa-instagram"></i></a>
                 </div>
             </div>
-
-            <div class="col-lg-2 col-md-4 mb-4">
+            <div class="col-lg-2 col-md-4 mb-4 footer-links">
                 <h6 class="fw-bold mb-3">Menu</h6>
                 <ul class="list-unstyled">
-                    <li><a href="menu.html" class="text-light text-decoration-none">Cà phê</a></li>
-                    <li><a href="menu.html" class="text-light text-decoration-none">Trà</a></li>
-                    <li><a href="menu.html" class="text-light text-decoration-none">Bánh ngọt</a></li>
-                    <li><a href="menu.html" class="text-light text-decoration-none">Sandwich</a></li>
+                    <li><a href="menu.html" class="text-light">Cà phê</a></li>
+                    <li><a href="menu.html" class="text-light">Trà</a></li>
+                    <li><a href="menu.html" class="text-light">Bánh ngọt</a></li>
+                    <li><a href="menu.html" class="text-light">Sandwich</a></li>
                 </ul>
             </div>
-
-            <div class="col-lg-2 col-md-4 mb-4">
+            <div class="col-lg-2 col-md-4 mb-4 footer-links">
                 <h6 class="fw-bold mb-3">Dịch vụ</h6>
                 <ul class="list-unstyled">
-                    <li><a href="public.html" class="text-light text-decoration-none">Đặt bàn</a></li>
-                    <li><a href="#" class="text-light text-decoration-none">Delivery</a></li>
-                    <li><a href="#" class="text-light text-decoration-none">Catering</a></li>
-                    <li><a href="#" class="text-light text-decoration-none">Events</a></li>
+                    <li><a href="public.html" class="text-light">Đặt bàn</a></li>
+                    <li><a href="#" class="text-light">Delivery</a></li>
+                    <li><a href="#" class="text-light">Catering</a></li>
+                    <li><a href="#" class="text-light">Events</a></li>
                 </ul>
             </div>
-
             <div class="col-lg-4 col-md-4 mb-4">
                 <h6 class="fw-bold mb-3">Liên hệ</h6>
-                <p class="text-light mb-2"><i class="fas fa-map-marker-alt"></i> 123 Đường Cà Phê, TP. HCM</p>
-                <p class="text-light mb-2"><i class="fas fa-phone"></i> (84) 123 456 789</p>
-                <p class="text-light"><i class="fas fa-envelope"></i> info@cafepremium.com</p>
+                <p class="text-light mb-2"><i class="fas fa-map-marker-alt me-2"></i>123 Đường Cà Phê, TP. HCM</p>
+                <p class="text-light mb-2"><i class="fas fa-phone me-2"></i>(84) 123 456 789</p>
+                <p class="text-light"><i class="fas fa-envelope me-2"></i>info@cafepremium.com</p>
             </div>
         </div>
-
         <hr class="bg-light">
         <div class="row">
             <div class="col-12 text-center">
@@ -147,146 +178,6 @@
     </div>
 </footer>
 
-<!-- Bootstrap 5 JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-</body>
-</html>
-                <div class="col-md-4">
-                    <div class="feature-card text-center p-4 h-100">
-                        <div class="feature-icon mb-3">
-                            <i class="fas fa-coffee fa-3x text-primary"></i>
-                        </div>
-                        <h4 class="fw-bold mb-3">Cà phê cao cấp</h4>
-                        <p class="text-muted">Hạt cà phê tuyển chọn, rang kỹ để mang lại hương vị đậm đà và thơm ngon.</p>
-                    </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="feature-card text-center p-4 h-100">
-                        <div class="feature-icon mb-3">
-                            <i class="fas fa-calendar-check fa-3x text-success"></i>
-                        </div>
-                        <h4 class="fw-bold mb-3">Đặt bàn dễ dàng</h4>
-                        <p class="text-muted">Giữ bàn trước, không phải chờ đợi. Mở đặt 24/7 trực tuyến.</p>
-                    </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="feature-card text-center p-4 h-100">
-                        <div class="feature-icon mb-3">
-                            <i class="fas fa-mobile-alt fa-3x text-info"></i>
-                        </div>
-                        <h4 class="fw-bold mb-3">Đặt hàng di động</h4>
-                        <p class="text-muted">Đặt trước và nhận đồ ngay khi đến. Nhanh chóng, tiện lợi và an toàn.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Quick Access Section -->
-    <section class="quick-access py-5">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="text-center mb-5">
-                        <h2 class="display-5 fw-bold text-dark mb-3">Bắt đầu hành trình cà phê</h2>
-                        <p class="lead text-muted">Chọn cách bạn muốn tận hưởng cà phê, trà và đồ uống tươi mát của Cafe Premium.</p>
-                    </div>
-
-                    <div class="row g-4">
-                        <div class="col-md-6">
-                            <div class="access-card card border-0 shadow-sm h-100">
-                                <div class="card-body text-center p-4">
-                                    <div class="access-icon mb-3">
-                                        <i class="fas fa-user fa-2x text-primary"></i>
-                                    </div>
-                                    <h5 class="card-title fw-bold mb-3">Người dùng</h5>
-                                    <p class="card-text text-muted mb-4">Xem menu, đặt bàn và tận hưởng dịch vụ của chúng tôi</p>
-                                    <a href="public.html" class="btn btn-primary w-100">Vào trang khách</a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="access-card card border-0 shadow-sm h-100">
-                                <div class="card-body text-center p-4">
-                                    <div class="access-icon mb-3">
-                                        <i class="fas fa-cog fa-2x text-secondary"></i>
-                                    </div>
-                                    <h5 class="card-title fw-bold mb-3">Quản trị viên</h5>
-                                    <p class="card-text text-muted mb-4">Quản lý menu, xử lý đặt bàn, và giám sát hoạt động</p>
-                                    <a href="login.html" class="btn btn-outline-secondary w-100">Vào trang quản trị</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-dark text-light py-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-4 mb-4">
-                    <h5 class="fw-bold mb-3">Cafebook</h5>
-                    <p class="text-light">Mang đến trải nghiệm cà phê hoàn hảo cùng dịch vụ đặt bàn trực tuyến.</p>
-                    <div class="social-links">
-                        <a href="#" class="text-light me-3"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="text-light me-3"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="text-light me-3"><i class="fab fa-instagram"></i></a>
-                    </div>
-                </div>
-
-                <div class="col-lg-2 col-md-4 mb-4">
-                    <h6 class="fw-bold mb-3">Menu</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="#" class="text-light text-decoration-none">Cà phê</a></li>
-                        <li><a href="#" class="text-light text-decoration-none">Trà</a></li>
-                        <li><a href="#" class="text-light text-decoration-none">Bánh ngọt</a></li>
-                        <li><a href="#" class="text-light text-decoration-none">Sandwich</a></li>
-                    </ul>
-                </div>
-
-                <div class="col-lg-2 col-md-4 mb-4">
-                    <h6 class="fw-bold mb-3">Hỗ trợ</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="#" class="text-light text-decoration-none">Trung tâm trợ giúp</a></li>
-                        <li><a href="#" class="text-light text-decoration-none">Liên hệ</a></li>
-                        <li><a href="#" class="text-light text-decoration-none">Chính sách bảo mật</a></li>
-                        <li><a href="#" class="text-light text-decoration-none">Điều khoản dịch vụ</a></li>
-                    </ul>
-                </div>
-
-                <div class="col-lg-4 mb-4">
-                    <h6 class="fw-bold mb-3">Cập </h6>
-                    <p class="text-light">Đăng ký để nhận các ưu đãi đặc biệt và cập nhật mới nhất.</p>
-                    <div class="input-group">
-                        <input type="email" class="form-control" placeholder="Nhập email của bạn">
-                        <button class="btn btn-primary" type="button">Subscribe</button>
-                    </div>
-                </div>
-            </div>
-
-            <hr class="my-4">
-
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <p class="text-light mb-0">&copy; 2026 Cafebook. Bảo lưu mọi quyền.</p>
-                </div>
-                <div class="col-md-6 text-md-end">
-                    <small class="text-light">Được tạo lên bởi nhóm 5</small>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Font Awesome for icons -->
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </body>
 </html>
