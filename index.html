@@ -14,85 +14,40 @@
     <link href="https://fonts.googleapis.com/css2?family=SoDoSans:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+<!-- Navigation Bar -->
+            <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+                <div class="container">
+                    <!-- Logo -->
+                 <a class="navbar-brand d-flex align-items-center" href="#">
+          <img
+            src="img/avata.jpg"
+            alt="Cafe Premium Logo"
+            class="me-2"
+            style="width: 40px; height: 40px; border-radius: 50%"
+          />
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-light fixed-top">
-    <div class="container">
-        <a class="navbar-brand" href="index.html">
-            <span class="text-dark">CAFE</span><span class="text-danger">PREMIUM</span>
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto gap-4">
-                <li class="nav-item"><a class="nav-link fw-bold" href="menu.html">Menu</a></li>
-                <li class="nav-item"><a class="nav-link fw-bold" href="public.html">Đặt bàn</a></li>
-                <li class="nav-item"><a href="login.html" class="btn btn-primary text-white">Quản trị</a></li>
-            </ul>
-        </div>
-    </div>
-</nav>
+            <!-- Mobile Toggle -->
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <!-- Navigation Menu -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-dark fw-semibold px-3" href="#menu">Menu</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark fw-semibold px-3" href="menu.html">Thực đơn</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark fw-semibold px-3" href="#rewards">Ưu đãi</a>
+                    </li>
+                </ul>
 
-<!-- Hero Section -->
-<header class="hero-section">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-7">
-                <h1 class="hero-title">Đánh thức<br><span class="text-danger">Cảm hứng</span> mỗi ngày.</h1>
-                <p class="lead text-muted mb-5 w-75">Trải nghiệm không gian cà phê đẳng cấp cùng hệ thống đặt chỗ thông minh. Tiết kiệm thời gian, trọn vẹn từng khoảnh khắc.</p>
-                <div class="d-flex gap-3">
-                    <a href="public.html" class="btn btn-primary btn-lg shadow-lg">Đặt chỗ ngay</a>
-                    <a href="menu.html" class="btn btn-outline-dark btn-lg rounded-pill px-5">Xem thực đơn</a>
-                </div>
-            </div>
-            <div class="col-lg-5 mt-5 mt-lg-0">
-                <div class="hero-image-container">
-                    <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=800&q=80" class="img-fluid" alt="Coffee">
-                </div>
-            </div>
-        </div>
-    </div>
-</header>
-
-<!-- Features Section -->
-<section class="features-section py-5">
-    <div class="container">
-        <div class="row text-center mb-5">
-            <div class="col-12">
-                <h2 class="display-5 fw-bold text-dark mb-3">Tại sao chọn Cafe Premium?</h2>
-                <p class="lead text-muted">Mọi thứ bạn cần cho trải nghiệm cà phê hoàn hảo</p>
-            </div>
-        </div>
-
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="feature-card text-center p-4 h-100">
-                    <div class="feature-icon mb-3">
-                        <i class="fas fa-coffee fa-3x"></i>
-                    </div>
-                    <h4 class="fw-bold mb-3">Cà phê cao cấp</h4>
-                    <p class="text-muted">Hạt cà phê tuyển chọn, rang kỹ để mang lại hương vị đậm đà và thơm ngon.</p>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="feature-card text-center p-4 h-100">
-                    <div class="feature-icon mb-3">
-                        <i class="fas fa-calendar-check fa-3x"></i>
-                    </div>
-                    <h4 class="fw-bold mb-3">Đặt bàn dễ dàng</h4>
-                    <p class="text-muted">Giữ bàn trước, không phải chờ đợi. Mở đặt 24/7 trực tuyến.</p>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="feature-card text-center p-4 h-100">
-                    <div class="feature-icon mb-3">
-                        <i class="fas fa-mobile-alt fa-3x"></i>
-                    </div>
-                    <h4 class="fw-bold mb-3">Đặt hàng di động</h4>
-                    <p class="text-muted">Đặt trước và nhận đồ ngay khi đến. Nhanh chóng, tiện lợi và an toàn.</p>
+                <!-- Login Buttons -->
+                <div class="d-flex align-items-center">
+                    <a href="public.html" class="btn btn-outline-dark me-2 px-4">Đăng nhập</a>
+                    <a href="login.html" class="btn btn-dark px-4" style="display: none;">Quản trị</a>
                 </div>
             </div>
         </div>
