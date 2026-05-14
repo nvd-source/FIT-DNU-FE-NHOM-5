@@ -51,7 +51,7 @@ body {
 /* Hero Section */
 .hero-section {
     min-height: 80vh;
-    background: linear-gradient(180deg, rgba(200,16,46,0.82), rgba(215,110,107,0.25)), url('https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
+    background: linear-gradient(135deg, rgba(200,16,46,0.92), rgba(255,235,230,0.95));
     position: relative;
     overflow: hidden;
     color: white;
@@ -89,7 +89,7 @@ body {
 .hero-content .lead {
     font-size: 1.25rem;
     line-height: 1.6;
-    color: var(--text-muted);
+    color: rgba(255,255,255,0.9);
 }
 
 .hero-image {
