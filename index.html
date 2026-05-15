@@ -27,7 +27,15 @@
             <ul class="navbar-nav ms-auto gap-4">
                 <li class="nav-item"><a class="nav-link fw-bold" href="menu.html">Menu</a></li>
                 <li class="nav-item"><a class="nav-link fw-bold" href="public.html">Đặt bàn</a></li>
-                <li class="nav-item"><a class="btn btn-primary text-white" href="login.html">Quản trị</a></li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link fw-bold dropdown-toggle" href="#" id="loginDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="loginDropdown">
+                        <li><a class="dropdown-item" href="login-customer.html"><i class="fas fa-user me-2"></i>Đăng nhập khách</a></li>
+                        <li><a class="dropdown-item" href="login.html"><i class="fas fa-lock me-2"></i>Đăng nhập Admin</a></li>
+                    </ul>
+                </li>
             </ul>
         </div>
     </div>
@@ -53,82 +61,143 @@
     </div>
 </header>
 
-<section class="features-section py-5">
-    <div class="container">
-        <div class="row text-center mb-5">
-            <div class="col-12">
-                <h2 class="display-5 fw-bold mb-3">Tại sao chọn Cafe Premium?</h2>
-                <p class="lead text-muted">Mọi thứ bạn cần cho trải nghiệm cà phê hoàn hảo</p>
+<!-- Drinks Carousel Section -->
+<section class="drinks-carousel-section py-5 bg-light">
+    <div class="container-fluid">
+        <h2 class="text-center fw-bold mb-4">Đặc Biệt Hôm Nay</h2>
+        <p class="text-center text-muted mb-5">Những món đồ uống nổi bật từ quán cà phê Cafe Premium</p>
+        
+        <div class="drinks-carousel-container">
+            <div class="drinks-carousel" id="drinksCarousel">
+                <!-- Drinks will be loaded here via API -->
             </div>
         </div>
+
+        <div class="text-center mt-4">
+            <button class="btn btn-outline-primary me-2" id="prevCarouselBtn">
+                <i class="fas fa-chevron-left"></i> Trước
+            </button>
+            <button class="btn btn-outline-primary" id="nextCarouselBtn">
+                Sau <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- About Cafe Section -->
+<section class="about-cafe-section py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <img src="https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=600&q=80" alt="About Cafe" class="img-fluid rounded-4 shadow-lg">
+            </div>
+            <div class="col-lg-6">
+                <h2 class="fw-bold mb-4">Về Cafe Premium</h2>
+                <p class="lead text-muted mb-3">
+                    Cafe Premium là địa điểm lý tưởng cho những người yêu thích cà phê và các đồ uống chất lượng cao.
+                </p>
+                <ul class="list-unstyled mb-4">
+                    <li class="mb-3">
+                        <i class="fas fa-check-circle text-danger me-2"></i>
+                        <strong>Cà phê tuyển chọn:</strong> Hạt cà phê nhập khẩu từ các vùng nổi tiếng
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-check-circle text-danger me-2"></i>
+                        <strong>Không gian thoải mái:</strong> Được thiết kế để mang lại sự thư giãn tối đa
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-check-circle text-danger me-2"></i>
+                        <strong>Dịch vụ chuyên nghiệp:</strong> Đội ngũ nhân viên thân thiện và tận tâm
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-check-circle text-danger me-2"></i>
+                        <strong>Đặt bàn trực tuyến:</strong> Đơn giản, nhanh chóng, không phải chờ đợi
+                    </li>
+                </ul>
+                <a href="public.html" class="btn btn-primary btn-lg">Khám Phá Thêm</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Reviews Section -->
+<section class="reviews-section py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center fw-bold mb-5">Đánh Giá Từ Khách Hàng</h2>
         <div class="row g-4">
-            <div class="col-md-4">
-                <div class="feature-card text-center p-4 h-100">
-                    <div class="feature-icon mb-3">
-                        <i class="fas fa-coffee fa-3x"></i>
+            <div class="col-md-6 col-lg-4">
+                <div class="review-card card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="https://ui-avatars.com/api/?name=Nguyen+Tuan" alt="Reviewer" class="rounded-circle me-3" style="width: 50px; height: 50px;">
+                            <div>
+                                <h6 class="mb-0">Nguyễn Tuấn</h6>
+                                <small class="text-muted">Khách hàng thường xuyên</small>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                        </div>
+                        <p class="text-muted">"Cà phê sữa tuyệt vời! Không gian yên tĩnh, nhân viên rất thân thiện. Sẽ quay lại!"</p>
                     </div>
-                    <h4 class="fw-bold mb-3">Cà phê cao cấp</h4>
-                    <p class="text-muted">Hạt cà phê tuyển chọn, rang kỹ để mang lại hương vị đậm đà và thơm ngon.</p>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="feature-card text-center p-4 h-100">
-                    <div class="feature-icon mb-3">
-                        <i class="fas fa-calendar-check fa-3x"></i>
+            <div class="col-md-6 col-lg-4">
+                <div class="review-card card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="https://ui-avatars.com/api/?name=Pham+Linh" alt="Reviewer" class="rounded-circle me-3" style="width: 50px; height: 50px;">
+                            <div>
+                                <h6 class="mb-0">Phạm Linh</h6>
+                                <small class="text-muted">Du khách</small>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                        </div>
+                        <p class="text-muted">"Quán rất sạch sẽ, cà phê chất lượng cao. Hệ thống đặt bàn online rất tiện!"</p>
                     </div>
-                    <h4 class="fw-bold mb-3">Đặt bàn dễ dàng</h4>
-                    <p class="text-muted">Giữ bàn trước, không phải chờ đợi. Đặt chỗ mọi lúc mọi nơi.</p>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="feature-card text-center p-4 h-100">
-                    <div class="feature-icon mb-3">
-                        <i class="fas fa-mobile-alt fa-3x"></i>
+            <div class="col-md-6 col-lg-4">
+                <div class="review-card card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="https://ui-avatars.com/api/?name=Tran+Hoa" alt="Reviewer" class="rounded-circle me-3" style="width: 50px; height: 50px;">
+                            <div>
+                                <h6 class="mb-0">Trần Hoa</h6>
+                                <small class="text-muted">Nhân viên văn phòng</small>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                        </div>
+                        <p class="text-muted">"Tuyệt vời! Nơi làm việc lý tưởng. Cà phê ngon, giá cả phải chăng. Đặc biệt yêu thích trà đào."</p>
                     </div>
-                    <h4 class="fw-bold mb-3">Thanh toán nhanh chóng</h4>
-                    <p class="text-muted">Thanh toán linh hoạt, giữ chỗ an toàn và nhận ưu đãi hấp dẫn.</p>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<section class="quick-access py-5 bg-light">
+<!-- CTA Section - Book Now -->
+<section class="cta-section py-5 bg-danger text-white text-center">
     <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="text-center mb-5">
-                    <h2 class="display-5 fw-bold mb-3">Bắt đầu hành trình cà phê</h2>
-                    <p class="lead text-muted">Chọn cách bạn muốn tận hưởng cà phê, trà và đồ uống tươi mát của Cafe Premium.</p>
-                </div>
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <div class="access-card card border-0 shadow-sm h-100">
-                            <div class="card-body text-center p-4">
-                                <div class="access-icon mb-3">
-                                    <i class="fas fa-user fa-2x"></i>
-                                </div>
-                                <h5 class="card-title fw-bold mb-3">Người dùng</h5>
-                                <p class="text-muted mb-4">Xem menu, đặt bàn và tận hưởng dịch vụ của chúng tôi.</p>
-                                <a href="public.html" class="btn btn-primary w-100">Đăng nhập</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="access-card card border-0 shadow-sm h-100">
-                            <div class="card-body text-center p-4">
-                                <div class="access-icon mb-3">
-                                    <i class="fas fa-cog fa-2x"></i>
-                                </div>
-                                <h5 class="card-title fw-bold mb-3">Quản trị viên</h5>
-                                <p class="text-muted mb-4">Quản lý đặt bàn, menu và hoạt động cửa hàng.</p>
-                                <a href="login.html" class="btn btn-outline-dark w-100">Đăng nhập</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <h2 class="fw-bold mb-3">Sẵn Sàng Thưởng Thức Cà Phê Tuyệt Vời?</h2>
+        <p class="lead mb-4">Đặt bàn ngay hôm nay và nhận trải nghiệm cà phê không tương tự</p>
+        <a href="public.html" class="btn btn-light btn-lg px-5">Đặt Bàn Ngay</a>
     </div>
 </section>
 
@@ -148,9 +217,9 @@
                 <h6 class="fw-bold mb-3">Menu</h6>
                 <ul class="list-unstyled">
                     <li><a href="menu.html" class="text-light">Cà phê</a></li>
-                    <li><a href="menu.html" class="text-light">Trà</a></li>
+                    <li><a href="menu.html" class="text-light">Trà lạnh</a></li>
                     <li><a href="menu.html" class="text-light">Sinh tố</a></li>
-                    <li><a href="menu.html" class="text-light">Nước ép</a></li>
+                    <li><a href="menu.html" class="text-light">Tráng miệng</a></li>
                 </ul>
             </div>
             <div class="col-lg-2 col-md-4 mb-4 footer-links">
@@ -158,7 +227,6 @@
                 <ul class="list-unstyled">
                     <li><a href="public.html" class="text-light">Đặt bàn</a></li>
                     <li><a href="#" class="text-light">Giao hàng</a></li>
-                    <li><a href="#" class="text-light">Dịch vụ</a></li>
                     <li><a href="#" class="text-light">Sự kiện</a></li>
                 </ul>
             </div>
@@ -179,5 +247,7 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="api.js"></script>
+<script src="index.js"></script>
 </body>
 </html>

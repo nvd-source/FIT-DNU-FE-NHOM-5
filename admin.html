@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin</title>
+    <title>Quản Lý Admin - Cafe Premium</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap 5 JS -->
@@ -19,7 +19,10 @@
             <a class="navbar-brand" href="index.html">
                 <span class="text-dark">CAFE</span><span class="text-danger">PREMIUM</span>
             </a>
-            <button id="logoutBtn" type="button" class="btn btn-outline-danger d-none">Đăng xuất</button>
+            <div class="ms-auto">
+                <span class="me-3 text-dark">Xin chào Admin</span>
+                <button id="logoutBtn" type="button" class="btn btn-outline-danger d-none">Đăng xuất</button>
+            </div>
         </div>
     </nav>
 
@@ -29,19 +32,16 @@
                 <!-- Sidebar -->
                 <div class="col-md-3 col-lg-2 px-0 bg-light sidebar">
                     <div class="d-flex flex-column p-3">
-                        <h5 class="mb-3">Quản lý</h5>
+                        <h5 class="mb-3">Quản Lý</h5>
                         <nav class="nav nav-pills flex-column">
                             <a class="nav-link active" href="#dashboard" data-section="dashboard">
-                                <i class="bi bi-house-door me-2"></i>Bảng điều khiển
+                                <i class="bi bi-house-door me-2"></i>Bảng Điều Khiển
                             </a>
                             <a class="nav-link" href="#menu" data-section="menu">
-                                <i class="bi bi-cup-hot me-2"></i>Quản lý Menu
+                                <i class="bi bi-cup-hot me-2"></i>Quản Lý Menu
                             </a>
                             <a class="nav-link" href="#reservations" data-section="reservations">
-                                <i class="bi bi-calendar-check me-2"></i>Duyệt đặt bàn
-                            </a>
-                            <a class="nav-link" href="public.html" target="_blank">
-                                <i class="bi bi-eye me-2"></i>Xem trang khách
+                                <i class="bi bi-calendar-check me-2"></i>Quản Lý Đặt Bàn
                             </a>
                         </nav>
                     </div>
@@ -51,29 +51,30 @@
                     <!-- Dashboard Section -->
                     <section id="dashboard" class="content-section">
                         <div class="container-fluid">
-                        <h2 class="mb-4">Bảng điều khiển</h2>
-                        <div class="row">
-                            <div class="col-md-4 mb-4">
-                                <div class="card text-center shadow">
-                                    <div class="card-body">
-                                        <h5 class="card-title">Tổng đặt bàn</h5>
-                                        <h2 class="text-primary" id="totalReservations">0</h2>
+                            <h2 class="mb-4">Bảng Điều Khiển</h2>
+                            <div class="row">
+                                <div class="col-md-4 mb-4">
+                                    <div class="card text-center shadow">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Tổng Đặt Bàn</h5>
+                                            <h2 class="text-primary" id="totalReservations">0</h2>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-md-4 mb-4">
-                                <div class="card text-center shadow">
-                                    <div class="card-body">
-                                        <h5 class="card-title">Chờ duyệt</h5>
-                                        <h2 class="text-warning" id="pendingReservations">0</h2>
+                                <div class="col-md-4 mb-4">
+                                    <div class="card text-center shadow">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Chờ Duyệt</h5>
+                                            <h2 class="text-warning" id="pendingReservations">0</h2>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-md-4 mb-4">
-                                <div class="card text-center shadow">
-                                    <div class="card-body">
-                                        <h5 class="card-title">Đã xác nhận</h5>
-                                        <h2 class="text-success" id="confirmedReservations">0</h2>
+                                <div class="col-md-4 mb-4">
+                                    <div class="card text-center shadow">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Đã Xác Nhận</h5>
+                                            <h2 class="text-success" id="confirmedReservations">0</h2>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -84,38 +85,37 @@
                     <section id="menu" class="content-section d-none">
                         <div class="container-fluid">
                             <div class="d-flex justify-content-between align-items-center mb-4">
-                                <h2>Quản lý Menu</h2>
-                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDrinkModal">Thêm món mới</button>
+                                <h2>Quản Lý Menu</h2>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDrinkModal">
+                                    <i class="bi bi-plus-circle"></i> Thêm Món Mới
+                                </button>
                             </div>
 
-                            <!-- Bảng danh sách menu -->
                             <div class="card shadow">
                                 <div class="card-body">
-                                    <div class="alert alert-info">
-                                        <strong>Ghi chú chỉnh sửa menu:</strong><br>
-                                        - Để thêm ảnh cho món, nhập URL hình ảnh vào trường "URL hình ảnh" (có thể lấy từ web như Highland Coffee hoặc Starbucks).<br>
-                                        - Có thể chỉnh sửa tên, mô tả, giá, danh mục của món.<br>
-                                        - Xóa món bằng nút "Xóa" nếu không cần thiết.
+                                    <div class="alert alert-info mb-3">
+                                        <strong>Hướng dẫn:</strong> Bạn có thể thêm, sửa hoặc xóa các món từ menu.
                                     </div>
                                     <div id="menuTableContainer">
-                                        <!-- Danh sách menu sẽ hiển thị ở đây -->
+                                        <!-- Menu items will be displayed here -->
                                     </div>
                                 </div>
                             </div>
+                        </div>
                     </section>
 
                     <!-- Reservations Management Section -->
                     <section id="reservations" class="content-section d-none">
                         <div class="container-fluid">
-                            <h2 class="mb-4">Duyệt đặt bàn</h2>
+                            <h2 class="mb-4">Quản Lý Đặt Bàn</h2>
 
                             <!-- Filter Buttons -->
                             <div class="d-flex justify-content-center mb-4">
                                 <div class="btn-group" role="group">
-                                    <button type="button" class="btn btn-outline-primary active" data-filter="all">Tất cả</button>
-                                    <button type="button" class="btn btn-outline-warning" data-filter="pending">Chờ duyệt</button>
-                                    <button type="button" class="btn btn-outline-success" data-filter="confirmed">Đã xác nhận</button>
-                                    <button type="button" class="btn btn-outline-danger" data-filter="cancelled">Đã hủy</button>
+                                    <button type="button" class="btn btn-outline-primary active" data-filter="all">Tất Cả</button>
+                                    <button type="button" class="btn btn-outline-warning" data-filter="pending">Chờ Duyệt</button>
+                                    <button type="button" class="btn btn-outline-success" data-filter="confirmed">Đã Xác Nhận</button>
+                                    <button type="button" class="btn btn-outline-danger" data-filter="cancelled">Đã Hủy</button>
                                 </div>
                             </div>
 
@@ -139,20 +139,20 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalTitle">Thêm món mới</h5>
+                    <h5 class="modal-title" id="modalTitle">Thêm Món Mới</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="drinkForm">
+                    <form id="drinkForm" novalidate>
                         <input type="hidden" id="drinkId">
                         <div class="mb-3">
-                            <label for="drinkName" class="form-label">Tên món *</label>
+                            <label for="drinkName" class="form-label">Tên Món *</label>
                             <input type="text" class="form-control" id="drinkName" placeholder="Nhập tên món" required>
                             <div class="invalid-feedback">Vui lòng nhập tên món</div>
                         </div>
                         <div class="mb-3">
-                            <label for="drinkDescription" class="form-label">Mô tả</label>
-                            <textarea class="form-control" id="drinkDescription" rows="3" placeholder="Mô tả món, ví dụ: đậm vị, thơm và béo"></textarea>
+                            <label for="drinkDescription" class="form-label">Mô Tả</label>
+                            <textarea class="form-control" id="drinkDescription" rows="3" placeholder="Mô tả món"></textarea>
                         </div>
                         <div class="mb-3">
                             <label for="drinkPrice" class="form-label">Giá (VND) *</label>
@@ -160,20 +160,19 @@
                             <div class="invalid-feedback">Vui lòng nhập giá hợp lệ</div>
                         </div>
                         <div class="mb-3">
-                            <label for="drinkCategory" class="form-label">Danh mục *</label>
+                            <label for="drinkCategory" class="form-label">Danh Mục *</label>
                             <select class="form-select" id="drinkCategory" required>
                                 <option value="">Chọn danh mục</option>
                                 <option value="coffee">Cà phê</option>
-                                <option value="tea">Trà</option>
+                                <option value="tea">Trà lạnh</option>
                                 <option value="juice">Sinh tố</option>
                                 <option value="other">Khác</option>
                             </select>
                             <div class="invalid-feedback">Vui lòng chọn danh mục</div>
                         </div>
                         <div class="mb-3">
-                            <label for="drinkImage" class="form-label">URL hình ảnh</label>
-                            <input type="url" class="form-control" id="drinkImage" placeholder="Đường dẫn hình ảnh (nếu có)">
-                            <div class="invalid-feedback">URL không hợp lệ</div>
+                            <label for="drinkImage" class="form-label">URL Hình Ảnh</label>
+                            <input type="url" class="form-control" id="drinkImage" placeholder="Đường dẫn hình ảnh">
                         </div>
                     </form>
                 </div>
@@ -183,7 +182,6 @@
                 </div>
             </div>
         </div>
-    </div>
     </div>
 
     <!-- Scripts -->

@@ -1,5 +1,4 @@
-// JavaScript quản trị Cafebook
-// Xử lý menu, đặt bàn và bảng điều khiển cho admin
+// Admin panel functionality
 
 let allDrinks = [];
 let allReservations = [];
@@ -13,7 +12,7 @@ const saveDrinkBtn = document.getElementById('saveDrinkBtn');
 const adminContent = document.getElementById('adminContent');
 const logoutBtn = document.getElementById('logoutBtn');
 
-// Khởi tạo admin app
+// Initialize
 document.addEventListener('DOMContentLoaded', function() {
     addDrinkModal = new bootstrap.Modal(document.getElementById('addDrinkModal'));
     setupEventListeners();
@@ -75,7 +74,7 @@ function checkAdminSession() {
     loadDashboard();
     loadMenu();
     loadReservations();
-    showSection('dashboard'); // Hiển thị dashboard mặc định
+    showSection('dashboard');
 }
 
 function handleLogout() {
@@ -83,8 +82,7 @@ function handleLogout() {
     window.location.href = 'login.html';
 }
 
-
-// Tải dữ liệu bảng điều khiển
+// Dashboard
 async function loadDashboard() {
     try {
         const reservations = await CafeAPI.getReservations();
@@ -102,7 +100,7 @@ async function loadDashboard() {
     }
 }
 
-// Tải danh sách đồ uống
+// Menu Management
 async function loadMenu() {
     try {
         CafeAPI.showLoading(menuTableContainer);
@@ -114,7 +112,6 @@ async function loadMenu() {
     }
 }
 
-// Hiển thị bảng menu đồ uống
 function displayMenuTable(drinks) {
     if (drinks.length === 0) {
         menuTableContainer.innerHTML = '<div class="alert alert-info">Chưa có món nào trong menu</div>';
@@ -123,14 +120,14 @@ function displayMenuTable(drinks) {
 
     let tableHTML = `
         <div class="table-responsive">
-            <table class="table table-striped">
+            <table class="table table-striped table-hover">
                 <thead>
                     <tr>
-                        <th>Hình ảnh</th>
-                        <th>Tên món</th>
-                        <th>Danh mục</th>
+                        <th>Hình Ảnh</th>
+                        <th>Tên Món</th>
+                        <th>Danh Mục</th>
                         <th>Giá</th>
-                        <th>Thao tác</th>
+                        <th>Thao Tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -144,8 +141,12 @@ function displayMenuTable(drinks) {
                 <td><span class="badge bg-secondary">${drink.category}</span></td>
                 <td>${drink.price.toLocaleString()} VND</td>
                 <td>
-                    <button class="btn btn-sm btn-outline-primary me-2" onclick="editDrink('${drink.id}')">Sửa</button>
-                    <button class="btn btn-sm btn-outline-danger" onclick="deleteDrink('${drink.id}')">Xóa</button>
+                    <button class="btn btn-sm btn-outline-primary me-2" onclick="editDrink('${drink.id}')">
+                        <i class="bi bi-pencil"></i> Sửa
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteDrink('${drink.id}')">
+                        <i class="bi bi-trash"></i> Xóa
+                    </button>
                 </td>
             </tr>
         `;
@@ -160,7 +161,6 @@ function displayMenuTable(drinks) {
     menuTableContainer.innerHTML = tableHTML;
 }
 
-// Chỉnh sửa món
 async function editDrink(id) {
     try {
         const drink = await CafeAPI.getDrinkById(id);
@@ -172,7 +172,7 @@ async function editDrink(id) {
         document.getElementById('drinkCategory').value = drink.category;
         document.getElementById('drinkImage').value = drink.imageUrl || '';
 
-        document.getElementById('modalTitle').textContent = 'Chỉnh sửa món';
+        document.getElementById('modalTitle').textContent = 'Chỉnh Sửa Món';
         if (addDrinkModal) addDrinkModal.show();
 
     } catch (error) {
@@ -180,12 +180,11 @@ async function editDrink(id) {
     }
 }
 
-// Xóa món
 async function deleteDrink(id) {
     if (confirm('Bạn có chắc muốn xóa món này?')) {
         try {
             await CafeAPI.deleteDrink(id);
-            loadMenu(); // Reload menu
+            loadMenu();
             showToast('Đã xóa món thành công', 'success');
         } catch (error) {
             CafeAPI.showError('Không thể xóa món');
@@ -193,9 +192,7 @@ async function deleteDrink(id) {
     }
 }
 
-// Lưu món (thêm mới hoặc cập nhật)
 async function saveDrink() {
-    // Validate form
     if (!validateDrinkForm()) {
         return;
     }
@@ -210,33 +207,30 @@ async function saveDrink() {
 
     try {
         saveDrinkBtn.disabled = true;
-        saveDrinkBtn.textContent = 'Đang lưu...';
+        saveDrinkBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Đang lưu...';
 
         const drinkId = document.getElementById('drinkId').value;
 
         if (drinkId) {
-            // Update
             await CafeAPI.updateDrink(drinkId, drinkData);
             showToast('Đã cập nhật món thành công', 'success');
         } else {
-            // Create
             await CafeAPI.createDrink(drinkData);
             showToast('Đã thêm món mới thành công', 'success');
         }
 
         if (addDrinkModal) addDrinkModal.hide();
         drinkForm.reset();
-        loadMenu(); // Reload menu
+        loadMenu();
 
     } catch (error) {
         CafeAPI.showError('Không thể lưu món');
     } finally {
         saveDrinkBtn.disabled = false;
-        saveDrinkBtn.textContent = 'Lưu';
+        saveDrinkBtn.innerHTML = '<i class="bi bi-save"></i> Lưu';
     }
 }
 
-// Kiểm tra form đồ uống
 function validateDrinkForm() {
     const requiredFields = drinkForm.querySelectorAll('[required]');
     let isValid = true;
@@ -250,7 +244,6 @@ function validateDrinkForm() {
     return isValid;
 }
 
-// Kiểm tra từng trường trong form đồ uống
 function validateDrinkField(event) {
     const field = event.target;
     const value = field.value.trim();
@@ -274,7 +267,6 @@ function validateDrinkField(event) {
     return true;
 }
 
-// Kiểm tra URL có hợp lệ hay không
 function isValidUrl(url) {
     try {
         new URL(url);
@@ -284,7 +276,6 @@ function isValidUrl(url) {
     }
 }
 
-// Show field error
 function showFieldError(field, message) {
     field.classList.add('is-invalid');
     const feedback = field.nextElementSibling;
@@ -293,25 +284,21 @@ function showFieldError(field, message) {
     }
 }
 
-// Hide field error
 function hideFieldError(field) {
     field.classList.remove('is-invalid');
     field.classList.add('is-valid');
 }
 
-// Hiển thị section được chọn trong sidebar
+// Sections
 function showSection(sectionId) {
-    // Hide all sections
     const sections = document.querySelectorAll('.content-section');
     sections.forEach(section => section.classList.add('d-none'));
 
-    // Show selected section
     const selectedSection = document.getElementById(sectionId);
     if (selectedSection) {
         selectedSection.classList.remove('d-none');
     }
 
-    // Update sidebar active link
     const sidebarLinks = document.querySelectorAll('.sidebar .nav-link');
     sidebarLinks.forEach(link => link.classList.remove('active'));
     const activeLink = document.querySelector(`.sidebar .nav-link[data-section="${sectionId}"]`);
@@ -320,7 +307,7 @@ function showSection(sectionId) {
     }
 }
 
-// Tải danh sách đặt bàn
+// Reservations
 async function loadReservations() {
     try {
         CafeAPI.showLoading(reservationsTableContainer);
@@ -332,7 +319,6 @@ async function loadReservations() {
     }
 }
 
-// Hiển thị bảng đặt bàn
 function displayReservationsTable(reservations) {
     if (reservations.length === 0) {
         reservationsTableContainer.innerHTML = '<div class="alert alert-info">Chưa có đặt bàn nào</div>';
@@ -341,16 +327,18 @@ function displayReservationsTable(reservations) {
 
     let tableHTML = `
         <div class="table-responsive">
-            <table class="table table-striped">
+            <table class="table table-striped table-hover">
                 <thead>
                     <tr>
-                        <th>Khách hàng</th>
+                        <th>Khách Hàng</th>
                         <th>SĐT</th>
+                        <th>Email</th>
                         <th>Bàn</th>
                         <th>Ngày/Giờ</th>
-                        <th>Số người</th>
-                        <th>Trạng thái</th>
-                        <th>Thao tác</th>
+                        <th>Số Người</th>
+                        <th>Ghi Chú</th>
+                        <th>Trạng Thái</th>
+                        <th>Thao Tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -362,9 +350,11 @@ function displayReservationsTable(reservations) {
             <tr>
                 <td>${reservation.guestName}</td>
                 <td>${reservation.phone}</td>
+                <td>${reservation.email || '-'}</td>
                 <td>Bàn ${reservation.tableId}</td>
                 <td>${formatDate(reservation.date)} ${reservation.time}</td>
                 <td>${reservation.guests}</td>
+                <td><small>${reservation.notes || '-'}</small></td>
                 <td>${statusBadge}</td>
                 <td>
                     <div class="btn-group btn-group-sm">
@@ -384,33 +374,32 @@ function displayReservationsTable(reservations) {
     reservationsTableContainer.innerHTML = tableHTML;
 }
 
-// Tạo nhãn trạng thái đặt bàn
 function getStatusBadge(status) {
     const statusMap = {
-        'pending': { class: 'warning', text: 'Chờ duyệt' },
-        'confirmed': { class: 'success', text: 'Đã xác nhận' },
-        'cancelled': { class: 'danger', text: 'Đã hủy' }
+        'pending': { class: 'warning', text: 'Chờ Duyệt' },
+        'confirmed': { class: 'success', text: 'Đã Xác Nhận' },
+        'cancelled': { class: 'danger', text: 'Đã Hủy' }
     };
 
     const statusInfo = statusMap[status] || { class: 'secondary', text: status };
     return `<span class="badge bg-${statusInfo.class}">${statusInfo.text}</span>`;
 }
 
-// Tạo nút hành động theo trạng thái
 function getActionButtons(reservation) {
     let buttons = '';
 
     if (reservation.status === 'pending') {
-        buttons += `<button class="btn btn-outline-success" onclick="updateReservationStatus('${reservation.id}', 'confirmed')">Xác nhận</button>`;
-        buttons += `<button class="btn btn-outline-danger" onclick="updateReservationStatus('${reservation.id}', 'cancelled')">Hủy</button>`;
+        buttons += `<button class="btn btn-outline-success" onclick="updateReservationStatus('${reservation.id}', 'confirmed')"><i class="bi bi-check-circle"></i> Xác Nhận</button>`;
+        buttons += `<button class="btn btn-outline-danger" onclick="updateReservationStatus('${reservation.id}', 'cancelled')"><i class="bi bi-x-circle"></i> Hủy</button>`;
     } else if (reservation.status === 'confirmed') {
-        buttons += `<button class="btn btn-outline-danger" onclick="updateReservationStatus('${reservation.id}', 'cancelled')">Hủy</button>`;
+        buttons += `<button class="btn btn-outline-danger" onclick="updateReservationStatus('${reservation.id}', 'cancelled')"><i class="bi bi-x-circle"></i> Hủy</button>`;
+    } else if (reservation.status === 'cancelled') {
+        buttons += `<button class="btn btn-outline-secondary" disabled>Đã Hủy</button>`;
     }
 
     return buttons;
 }
 
-// Cập nhật trạng thái đặt bàn
 async function updateReservationStatus(id, status) {
     try {
         const reservation = await CafeAPI.getReservationById(id);
@@ -418,8 +407,8 @@ async function updateReservationStatus(id, status) {
 
         await CafeAPI.updateReservation(id, reservation);
 
-        loadReservations(); // Reload reservations
-        loadDashboard(); // Update dashboard
+        loadReservations();
+        loadDashboard();
         showToast(`Đã ${status === 'confirmed' ? 'xác nhận' : 'hủy'} đặt bàn`, 'success');
 
     } catch (error) {
@@ -427,7 +416,6 @@ async function updateReservationStatus(id, status) {
     }
 }
 
-// Lọc danh sách đặt bàn
 function filterReservations(status) {
     let filteredReservations;
 
@@ -440,13 +428,11 @@ function filterReservations(status) {
     displayReservationsTable(filteredReservations);
 }
 
-// Format date
 function formatDate(dateString) {
     const date = new Date(dateString);
     return date.toLocaleDateString('vi-VN');
 }
 
-// Hiển thị thông báo toast
 function showToast(message, type = 'info') {
     const toastHtml = `
         <div class="toast align-items-center text-white bg-${type} border-0" role="alert">
@@ -476,16 +462,3 @@ function showToast(message, type = 'info') {
         toastElement.remove();
     });
 }
-
-// Smooth scrolling for navigation
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth'
-            });
-        }
-    });
-});

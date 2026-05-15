@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const menuContainer = document.getElementById('menuContainer');
     const filterButtons = document.querySelectorAll('[data-filter]');
+    const refreshBtn = document.getElementById('refreshMenuBtn');
 
     function setLoading() {
         if (!menuContainer) return;
@@ -34,14 +35,21 @@ document.addEventListener('DOMContentLoaded', function() {
             const card = document.createElement('div');
             card.className = 'col-md-6 col-lg-4';
             card.innerHTML = `
-                <div class="card h-100 shadow-sm">
-                    <img src="${drink.imageUrl || 'https://via.placeholder.com/300x200?text=Cafe'}" class="card-img-top" alt="${drink.name}">
+                <div class="card h-100 shadow-sm menu-drink-card">
+                    <div class="menu-drink-image-wrapper">
+                        <img src="${drink.imageUrl || 'https://via.placeholder.com/300x200?text=Cafe'}" class="card-img-top menu-drink-image" alt="${drink.name}">
+                    </div>
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title">${drink.name}</h5>
-                        <p class="card-text text-muted">${drink.description || 'Đồ uống ngon, phù hợp với mọi khẩu vị.'}</p>
+                        <p class="card-text text-muted small">${drink.description || 'Đồ uống ngon, phù hợp với mọi khẩu vị.'}</p>
                         <div class="mt-auto">
                             <span class="badge bg-secondary mb-2 text-capitalize">${drink.category || 'Khác'}</span>
-                            <p class="card-text fw-bold text-red">${drink.price ? drink.price.toLocaleString() : '0'} VND</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <p class="card-text fw-bold text-danger mb-0">${drink.price ? drink.price.toLocaleString() : '0'} VND</p>
+                                <button class="btn btn-sm btn-danger" onclick="addToCart('${drink.id}', '${drink.name}')">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -83,5 +91,46 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+            loadMenu();
+            showToast('Đã cập nhập thực đơn', 'success');
+        });
+    }
+
     loadMenu();
 });
+
+function showToast(message, type = 'info') {
+    const toastHtml = `
+        <div class="toast align-items-center text-white bg-${type} border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+
+    if (!document.getElementById('toastContainer')) {
+        const container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.className = 'toast-container position-fixed top-0 end-0 p-3';
+        container.style.zIndex = '11';
+        document.body.appendChild(container);
+    }
+
+    const container = document.getElementById('toastContainer');
+    container.insertAdjacentHTML('beforeend', toastHtml);
+
+    const toastElement = container.lastElementChild;
+    const toast = new bootstrap.Toast(toastElement);
+    toast.show();
+
+    toastElement.addEventListener('hidden.bs.toast', () => {
+        toastElement.remove();
+    });
+}
+
+function addToCart(drinkId, drinkName) {
+    showToast(`Đã thêm ${drinkName} vào đơn hàng`, 'success');
+}
