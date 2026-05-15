@@ -78,8 +78,10 @@ function checkAdminSession() {
 }
 
 function handleLogout() {
-    sessionStorage.removeItem('adminLoggedIn');
-    window.location.href = 'login.html';
+    if (confirm('Bạn có chắc muốn đăng xuất?')) {
+        sessionStorage.removeItem('adminLoggedIn');
+        window.location.href = 'login.html';
+    }
 }
 
 // Dashboard
@@ -107,7 +109,7 @@ async function loadMenu() {
         allDrinks = await CafeAPI.getDrinks();
         displayMenuTable(allDrinks);
     } catch (error) {
-        CafeAPI.showError('Không thể tải menu');
+        console.error('Error loading menu:', error);
         menuTableContainer.innerHTML = '<div class="alert alert-danger">Không thể tải menu</div>';
     }
 }
@@ -176,7 +178,8 @@ async function editDrink(id) {
         if (addDrinkModal) addDrinkModal.show();
 
     } catch (error) {
-        CafeAPI.showError('Không thể tải thông tin món');
+        console.error('Error editing drink:', error);
+        alert('Không thể tải thông tin món');
     }
 }
 
@@ -187,7 +190,8 @@ async function deleteDrink(id) {
             loadMenu();
             showToast('Đã xóa món thành công', 'success');
         } catch (error) {
-            CafeAPI.showError('Không thể xóa món');
+            console.error('Error deleting drink:', error);
+            alert('Không thể xóa món');
         }
     }
 }
@@ -224,7 +228,8 @@ async function saveDrink() {
         loadMenu();
 
     } catch (error) {
-        CafeAPI.showError('Không thể lưu món');
+        console.error('Error saving drink:', error);
+        alert('Không thể lưu món');
     } finally {
         saveDrinkBtn.disabled = false;
         saveDrinkBtn.innerHTML = '<i class="bi bi-save"></i> Lưu';
@@ -314,7 +319,7 @@ async function loadReservations() {
         allReservations = await CafeAPI.getReservations();
         displayReservationsTable(allReservations);
     } catch (error) {
-        CafeAPI.showError('Không thể tải danh sách đặt bàn');
+        console.error('Error loading reservations:', error);
         reservationsTableContainer.innerHTML = '<div class="alert alert-danger">Không thể tải danh sách đặt bàn</div>';
     }
 }
@@ -389,12 +394,12 @@ function getActionButtons(reservation) {
     let buttons = '';
 
     if (reservation.status === 'pending') {
-        buttons += `<button class="btn btn-outline-success" onclick="updateReservationStatus('${reservation.id}', 'confirmed')"><i class="bi bi-check-circle"></i> Xác Nhận</button>`;
-        buttons += `<button class="btn btn-outline-danger" onclick="updateReservationStatus('${reservation.id}', 'cancelled')"><i class="bi bi-x-circle"></i> Hủy</button>`;
+        buttons += `<button class="btn btn-outline-success btn-sm" onclick="updateReservationStatus('${reservation.id}', 'confirmed')"><i class="bi bi-check-circle"></i> Xác Nhận</button>`;
+        buttons += `<button class="btn btn-outline-danger btn-sm" onclick="updateReservationStatus('${reservation.id}', 'cancelled')"><i class="bi bi-x-circle"></i> Hủy</button>`;
     } else if (reservation.status === 'confirmed') {
-        buttons += `<button class="btn btn-outline-danger" onclick="updateReservationStatus('${reservation.id}', 'cancelled')"><i class="bi bi-x-circle"></i> Hủy</button>`;
+        buttons += `<button class="btn btn-outline-danger btn-sm" onclick="updateReservationStatus('${reservation.id}', 'cancelled')"><i class="bi bi-x-circle"></i> Hủy</button>`;
     } else if (reservation.status === 'cancelled') {
-        buttons += `<button class="btn btn-outline-secondary" disabled>Đã Hủy</button>`;
+        buttons += `<button class="btn btn-outline-secondary btn-sm" disabled>Đã Hủy</button>`;
     }
 
     return buttons;
@@ -412,7 +417,8 @@ async function updateReservationStatus(id, status) {
         showToast(`Đã ${status === 'confirmed' ? 'xác nhận' : 'hủy'} đặt bàn`, 'success');
 
     } catch (error) {
-        CafeAPI.showError('Không thể cập nhật trạng thái');
+        console.error('Error updating status:', error);
+        alert('Không thể cập nhật trạng thái');
     }
 }
 
