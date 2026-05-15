@@ -778,3 +778,21 @@ footer, footer * {
     border-radius: 20px;
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
 }
+.table-select {
+    border-radius: 12px;
+    padding: 12px;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+/* khi click vào dropdown */
+.table-select:focus {
+    border-color: #c0392b;
+    box-shadow: 0 0 0 0.2rem rgba(192, 57, 43, 0.25);
+}
+
+/* làm dropdown nhìn “xịn” hơn */
+.table-select option {
+    padding: 10px;
+    font-size: 15px;
+}
