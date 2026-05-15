@@ -43,10 +43,6 @@ function showToast(message, type = 'success') {
 
 // DOM elements
 const menuContainer = document.getElementById('menuContainer');
-const tablesContainer = document.getElementById('tablesContainer');
-const tableMap = document.getElementById('tableMap');
-const floor1Image = document.getElementById('floor1Image');
-const floor2Image = document.getElementById('floor2Image');
 const reservationForm = document.getElementById('reservationForm');
 const tableSelect = document.getElementById('tableId');
 
@@ -92,30 +88,6 @@ function setupEventListeners() {
 
     // Lưu khi nhập notes
     document.getElementById('notes').addEventListener('input', saveReservationData);
-
-    // Nút chuyển tầng
-    const floorButtons = document.querySelectorAll('.floor-toggle');
-    floorButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            selectedFloor = parseInt(this.getAttribute('data-floor'), 10);
-            floorButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-            displayFloorPlans();
-            displayTableMap();
-            displayTables();
-        });
-    });
-
-    // Đồng bộ lựa chọn bàn với sơ đồ
-    tableSelect.addEventListener('change', function() {
-        const selectedValue = this.value;
-        if (selectedValue) {
-            selectTable(parseInt(selectedValue));
-        } else {
-            selectedTableId = null;
-            displayTableMap();
-        }
-    });
 
     const refreshBtn = document.getElementById('refreshMenuBtn');
     if (refreshBtn) {
@@ -203,120 +175,22 @@ function filterMenu(category) {
 async function loadTables() {
     try {
         allTables = await CafeAPI.getTables();
-        displayFloorPlans();
-        displayTableMap();
-        displayTables();
         populateTableSelect();
     } catch (error) {
         CafeAPI.showError('Không thể tải danh sách bàn. Vui lòng thử lại sau.');
-        floor1Image.innerHTML = '<div class="text-center">Không thể tải sơ đồ Tầng 1</div>';
-        floor2Image.innerHTML = '<div class="text-center">Không thể tải sơ đồ Tầng 2</div>';
-        tableMap.innerHTML = '<div class="alert alert-danger">Không thể tải sơ đồ bàn</div>';
-        tablesContainer.innerHTML = '<div class="alert alert-danger">Không thể tải danh sách bàn</div>';
+        if (tableSelect) {
+            tableSelect.innerHTML = '<option value="">Không thể tải danh sách bàn</option>';
+        }
     }
 }
 
-// Hiển thị sơ đồ bàn
 function getTableFloor(table) {
     return table && table.floor ? parseInt(table.floor, 10) : 1;
 }
 
-function displayTableMap() {
-    tableMap.innerHTML = '';
-
-    const floorTables = allTables.filter(table => getTableFloor(table) === selectedFloor);
-    if (floorTables.length === 0) {
-        tableMap.innerHTML = '<div class="text-center">Chưa có bàn nào trên tầng này</div>';
-        return;
-    }
-
-    floorTables.forEach(table => {
-        const node = createTableNode(table);
-        tableMap.appendChild(node);
-    });
-}
-
-// Tạo nút bàn cho sơ đồ
-function createTableNode(table) {
-    const status = getTableStatus(table);
-    const isAvailable = status === 'available';
-    const node = document.createElement('button');
-    node.type = 'button';
-    node.className = 'table-node';
-    node.classList.add(isAvailable ? 'available' : 'reserved');
-    if (normalizeId(selectedTableId) === normalizeId(table.id)) {
-        node.classList.add('selected');
-    }
-    node.innerHTML = `
-        <div class="table-node-number">Bàn ${table.id}</div>
-        <div class="table-node-capacity">${table.capacity} người</div>
-    `;
-
-    if (isAvailable) {
-        node.addEventListener('click', () => selectTable(table.id));
-    } else {
-        node.disabled = true;
-    }
-
-    return node;
-}
-
-// Hiển thị danh sách bàn
-function displayTables() {
-    tablesContainer.innerHTML = '';
-
-    const floorTables = allTables.filter(table => getTableFloor(table) === selectedFloor);
-    if (floorTables.length === 0) {
-        tablesContainer.innerHTML = '<div class="col-12 text-center">Không có bàn nào trên tầng này</div>';
-        return;
-    }
-
-    renderTables(floorTables);
-}
-
-// Render bàn bằng grid layout hiện đại
-function renderTables(tables) {
-    const container = document.getElementById('tableMap');
-    if(!container) return;
-    
-    container.innerHTML = '';
-    tables.forEach(table => {
-        const div = document.createElement('div');
-        // Thêm các class để đồng bộ với CSS mới
-        div.className = `table-node ${table.status.toLowerCase()}`;
-        div.innerHTML = `
-            <span class="fw-bold fs-4">#${table.id}</span>
-            <small class="text-muted"><i class="fas fa-users"></i> ${table.capacity} chỗ</small>
-        `;
-        div.onclick = () => selectTable(table.id);
-        container.appendChild(div);
-    });
-}
-
-// Create table card element
-function createTableCard(table) {
-    const col = document.createElement('div');
-    col.className = 'col-lg-3 col-md-4 col-sm-6 mb-4';
-
-    const status = getTableStatus(table);
-    const statusClass = status === 'available' ? 'success' : 'danger';
-    const statusText = status === 'available' ? 'Trống' : 'Đã đặt';
-
-    col.innerHTML = `
-        <div class="card h-100 shadow-sm">
-            <div class="card-body text-center">
-                <h5 class="card-title">Bàn ${table.id}</h5>
-                <p class="card-text">Sức chứa: ${table.capacity} người</p>
-                <span class="badge bg-${statusClass}">${statusText}</span>
-            </div>
-        </div>
-    `;
-
-    return col;
-}
-
-// Điền danh sách bàn vào form đặt bàn
 function populateTableSelect() {
+    if (!tableSelect) return;
+
     tableSelect.innerHTML = '<option value="">Chọn bàn</option>';
 
     const availableTables = allTables.filter(table => getTableStatus(table) === 'available');
@@ -336,172 +210,17 @@ function populateTableSelect() {
 function selectTable(tableId) {
     const normalizedId = normalizeId(tableId);
     const table = allTables.find(item => normalizeId(item.id) === normalizedId);
-    if (!table) {
-        return;
-    }
+    if (!table) return;
 
     selectedTableId = normalizedId;
-    selectedFloor = getTableFloor(table);
-    tableSelect.value = normalizedId;
-    updateFloorButtons();
-    displayFloorPlans();
-    displayTableMap();
-    displayTables();
-
-    // Đánh dấu bàn đang chọn trên sơ đồ
-    document.querySelectorAll('.table-node.selected').forEach(node => node.classList.remove('selected'));
-    const selectedNode = Array.from(tableMap.children).find(node => node.textContent.includes(`Bàn ${tableId}`));
-    if (selectedNode) selectedNode.classList.add('selected');
-
-    // Scroll đến form đặt bàn
-    document.getElementById('reservation').scrollIntoView({ behavior: 'smooth' });
-}
-
-function updateFloorButtons() {
-    const floorButtons = document.querySelectorAll('.floor-toggle');
-    floorButtons.forEach(btn => {
-        btn.classList.toggle('active', parseInt(btn.getAttribute('data-floor'), 10) === selectedFloor);
-    });
-}
-
-function displayFloorPlans() {
-    floor1Image.innerHTML = renderFloorPlan(1);
-    floor2Image.innerHTML = renderFloorPlan(2);
-    attachFloorPlanEvents();
-}
-
-function renderFloorPlan(floor) {
-    const positions = getFloorPlanPositions(floor);
-    const width = 360;
-    const height = 320;
-
-    const svgParts = positions.map(pos => {
-        const table = allTables.find(item => normalizeId(item.id) === pos.id);
-        if (!table) {
-            return '';
-        }
-
-        const status = getTableStatus(table);
-        const isSelected = normalizeId(selectedTableId) === normalizeId(table.id);
-        const color = status === 'available' ? '#fffdf6' : '#f7d7d0';
-        const stroke = isSelected ? '#9b261f' : '#c0392b';
-        const strokeWidth = isSelected ? 3 : 1.8;
-        const cursorStyle = status === 'available' ? 'cursor:pointer;' : 'cursor:not-allowed;';
-
-        return `
-            <g class="floor-table" data-table-id="${normalizeId(table.id)}" style="${cursorStyle}">
-                <rect x="${pos.x}" y="${pos.y}" width="${pos.w}" height="${pos.h}" rx="10" ry="10" fill="${color}" stroke="${stroke}" stroke-width="${strokeWidth}" />
-                <text x="${pos.x + pos.w / 2}" y="${pos.y + pos.h / 2 - 4}" text-anchor="middle" fill="#4b4b4b" font-size="11" font-weight="700">Bàn ${table.id}</text>
-                <text x="${pos.x + pos.w / 2}" y="${pos.y + pos.h / 2 + 12}" text-anchor="middle" fill="#6b6b6b" font-size="9">${table.capacity} chỗ</text>
-            </g>
-        `;
-    }).join('');
-
-    return `
-        <svg class="floor-svg" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
-            ${renderFloorOutline(floor)}
-            ${renderFloorDetails(floor)}
-            <text x="${width / 2}" y="28" text-anchor="middle" fill="#4b4b4b" font-size="18" font-weight="700">Tầng ${floor}</text>
-            ${svgParts}
-        </svg>
-    `;
-}
-
-function renderFloorOutline(floor) {
-    if (floor === 1) {
-        return `
-            <rect x="18" y="30" width="324" height="278" rx="18" fill="#f8f0e8" stroke="#4b4b4b" stroke-width="3" />
-            <rect x="18" y="30" width="84" height="116" rx="16" fill="#dfd4c8" stroke="#4b4b4b" stroke-width="2" />
-            <rect x="102" y="30" width="172" height="80" rx="16" fill="#ffffff" stroke="#4b4b4b" stroke-width="2" />
-            <rect x="276" y="30" width="66" height="90" rx="16" fill="#f6f2ee" stroke="#4b4b4b" stroke-width="2" />
-            <rect x="18" y="146" width="84" height="162" rx="16" fill="#ffffff" stroke="#4b4b4b" stroke-width="2" />
-            <path d="M 18 100 H 84" fill="none" stroke="#4b4b4b" stroke-width="3" />
-            <path d="M 18 146 H 84" fill="none" stroke="#4b4b4b" stroke-width="3" />
-            <line x1="102" y1="52" x2="274" y2="52" stroke="#4b4b4b" stroke-width="2" />
-        `;
+    if (tableSelect) {
+        tableSelect.value = normalizedId;
     }
 
-    return `
-        <rect x="18" y="30" width="324" height="278" rx="18" fill="#eef4e5" stroke="#4b4b4b" stroke-width="3" />
-        <rect x="18" y="30" width="88" height="278" rx="16" fill="#f7f7f2" stroke="#4b4b4b" stroke-width="2" />
-        <rect x="108" y="30" width="234" height="278" rx="16" fill="#ecf5e3" stroke="#4b4b4b" stroke-width="2" />
-        <path d="M 18 110 H 84" fill="none" stroke="#4b4b4b" stroke-width="3" />
-        <path d="M 18 162 H 84" fill="none" stroke="#4b4b4b" stroke-width="3" />
-        <path d="M 108 54 V 304" fill="none" stroke="#4b4b4b" stroke-width="2" stroke-dasharray="6 4" />
-    `;
-}
-
-function renderFloorDetails(floor) {
-    if (floor === 1) {
-        return `
-            <text x="50" y="48" fill="#4b4b4b" font-size="10" font-weight="700">Quầy pha chế</text>
-            <text x="298" y="48" fill="#4b4b4b" font-size="10" font-weight="700">WC</text>
-            <rect x="104" y="104" width="30" height="18" rx="8" fill="#c0b3a4" />
-            <rect x="140" y="104" width="30" height="18" rx="8" fill="#c0b3a4" />
-            <rect x="176" y="104" width="30" height="18" rx="8" fill="#c0b3a4" />
-            <rect x="212" y="104" width="30" height="18" rx="8" fill="#c0b3a4" />
-            <rect x="104" y="148" width="30" height="18" rx="8" fill="#c0b3a4" />
-            <rect x="140" y="148" width="30" height="18" rx="8" fill="#c0b3a4" />
-            <rect x="176" y="148" width="30" height="18" rx="8" fill="#c0b3a4" />
-            <rect x="212" y="148" width="30" height="18" rx="8" fill="#c0b3a4" />
-            <g fill="#8abf8f" opacity="0.8">
-                <circle cx="62" cy="236" r="8" />
-                <circle cx="82" cy="266" r="8" />
-                <circle cx="62" cy="292" r="8" />
-            </g>
-        `;
+    const reservationSection = document.getElementById('reservation');
+    if (reservationSection) {
+        reservationSection.scrollIntoView({ behavior: 'smooth' });
     }
-
-    return `
-        <text x="44" y="48" fill="#4b4b4b" font-size="10" font-weight="700">Cầu thang</text>
-        <text x="44" y="82" fill="#4b4b4b" font-size="10" font-weight="700">Khu vườn</text>
-        <rect x="110" y="66" width="30" height="18" rx="8" fill="#d0d7c1" />
-        <rect x="146" y="66" width="30" height="18" rx="8" fill="#d0d7c1" />
-        <rect x="182" y="66" width="30" height="18" rx="8" fill="#d0d7c1" />
-        <rect x="110" y="110" width="30" height="18" rx="8" fill="#d0d7c1" />
-        <rect x="146" y="110" width="30" height="18" rx="8" fill="#d0d7c1" />
-        <rect x="182" y="110" width="30" height="18" rx="8" fill="#d0d7c1" />
-        <g fill="#8abf8f" opacity="0.7">
-            <circle cx="64" cy="194" r="8" />
-            <circle cx="64" cy="232" r="8" />
-            <circle cx="64" cy="270" r="8" />
-            <circle cx="64" cy="308" r="8" />
-        </g>
-    `;
-}
-
-function getFloorPlanPositions(floor) {
-    if (floor === 1) {
-        return [
-            { id: 1, x: 108, y: 68, w: 48, h: 30 },
-            { id: 2, x: 164, y: 68, w: 48, h: 30 },
-            { id: 3, x: 220, y: 68, w: 48, h: 30 },
-            { id: 4, x: 136, y: 120, w: 48, h: 30 },
-            { id: 5, x: 192, y: 120, w: 48, h: 30 }
-        ];
-    }
-
-    return [
-        { id: 6, x: 108, y: 68, w: 48, h: 30 },
-        { id: 7, x: 164, y: 68, w: 48, h: 30 },
-        { id: 8, x: 220, y: 68, w: 48, h: 30 },
-        { id: 9, x: 136, y: 120, w: 48, h: 30 },
-        { id: 10, x: 192, y: 120, w: 48, h: 30 }
-    ];
-}
-function attachFloorPlanEvents() {
-    [floor1Image, floor2Image].forEach(floorEl => {
-        if (!floorEl) return;
-        floorEl.querySelectorAll('.floor-table').forEach(node => {
-            const tableId = normalizeId(node.getAttribute('data-table-id'));
-            const table = allTables.find(item => normalizeId(item.id) === tableId);
-            if (!table || getTableStatus(table) !== 'available') {
-                return;
-            }
-
-            node.addEventListener('click', () => selectTable(tableId));
-        });
-    });
 }
 
 // Kiểm tra từng trường dữ liệu
@@ -637,9 +356,6 @@ function resetForm() {
     reservationForm.reset();
     localStorage.removeItem('reservationData'); // Xóa dữ liệu đã lưu
     populateTableSelect();
-    updateFloorButtons();
-    displayTableMap();
-    displayTables();
 
     const submitBtn = reservationForm.querySelector('button[type="submit"]');
     if (submitBtn) {

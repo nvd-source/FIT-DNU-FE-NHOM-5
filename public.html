@@ -13,39 +13,28 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="index.html">
-                <img src="img/avata.jpg" alt="Cafe Premium Logo" class="me-2" style="width: 40px; height: 40px; border-radius: 50%;">
-                <span class="fw-bold text-dark fs-4">Cafe Premium</span>
+            <a class="navbar-brand" href="index.html">
+                <span class="text-dark">CAFE</span><span class="text-danger">PREMIUM</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#menu">Menu</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#tables">Bàn trống</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="menu.html">Thực đơn</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#reservation">Đặt bàn</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="login.html" style="display: none;">Quản trị</a>
-                    </li>
+                <ul class="navbar-nav ms-auto gap-4">
+                    <li class="nav-item"><a class="nav-link fw-bold" href="#menu">Menu</a></li>
+                    <li class="nav-item"><a class="nav-link fw-bold" href="#tables">Bàn trống</a></li>
+                    <li class="nav-item"><a class="nav-link fw-bold" href="menu.html">Thực đơn</a></li>
+                    <li class="nav-item"><a class="nav-link fw-bold" href="#reservation">Đặt bàn</a></li>
+                    <li class="nav-item"><a class="btn btn-primary text-white" href="login.html">Quản trị</a></li>
                 </ul>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero bg-light py-5">
+    <section class="hero-section py-5">
         <div class="container">
             <div class="row">
                 <div class="col-lg-8 mx-auto text-center">
@@ -83,36 +72,17 @@
     <!-- Tables Section -->
     <section id="tables" class="py-5 bg-light">
         <div class="container">
-            <h2 class="text-center mb-4">Sơ đồ bàn</h2>
-            <p class="text-center text-muted mb-4">Nhấn vào bàn để chọn nhanh trong form đặt bàn.</p>
-            <div id="tableMap" class="table-map mb-4">
-                <!-- Table map will be loaded here -->
-            </div>
-            <div class="table-legend d-flex justify-content-center gap-3 mb-4">
-                <span class="legend-item"><span class="legend-color legend-available"></span> Trống</span>
-                <span class="legend-item"><span class="legend-color legend-reserved"></span> Đã đặt</span>
-                <span class="legend-item"><span class="legend-color legend-selected"></span> Đang chọn</span>
-            </div>
-            <div class="d-flex justify-content-center gap-2 mb-4">
-                <button type="button" class="btn btn-outline-primary active floor-toggle" data-floor="1">Tầng 1</button>
-                <button type="button" class="btn btn-outline-primary floor-toggle" data-floor="2">Tầng 2</button>
-            </div>
-            <div class="row floor-plans g-3 mb-4">
-                <div class="col-md-6">
-                    <div class="floor-card card p-3 h-100">
-                        <h5 class="text-center mb-3">Sơ đồ Tầng 1</h5>
-                        <div class="floor-image" id="floor1Image"></div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="floor-card card p-3 h-100">
-                        <h5 class="text-center mb-3">Sơ đồ Tầng 2</h5>
-                        <div class="floor-image" id="floor2Image"></div>
-                    </div>
+            <h2 class="text-center mb-4">Chọn bàn</h2>
+            <p class="text-center text-muted mb-4">Xem sơ đồ chỗ ngồi và chọn bàn phù hợp trong form đặt bàn phía dưới.</p>
+            <div class="row justify-content-center mb-4">
+                <div class="col-md-10">
+                    <a href="#reservation" class="d-block overflow-hidden rounded-4 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80" alt="Sơ đồ bàn Cafe Premium" class="img-fluid">
+                    </a>
                 </div>
             </div>
-            <div id="tablesContainer" class="row">
-                <!-- Tables will be loaded here -->
+            <div class="text-center">
+                <p class="text-muted mb-0">Nhấn vào ảnh để chuyển đến form đặt bàn. Chọn bàn trống trong danh sách dropdown.</p>
             </div>
         </div>
     </section>
