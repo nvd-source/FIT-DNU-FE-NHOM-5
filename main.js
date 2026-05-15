@@ -229,3 +229,39 @@ function loadSavedReservationData() {
     document.getElementById('guests').value = data.guests || '';
     document.getElementById('notes').value = data.notes || '';
 }
+document.addEventListener("DOMContentLoaded", function () {
+  const dropdownBtn = document.getElementById("tableDropdownBtn");
+  const hiddenInput = document.getElementById("tableId");
+
+  document.querySelectorAll(".dropdown-item").forEach((item) => {
+    item.addEventListener("click", function (e) {
+      e.preventDefault();
+
+      const value = this.getAttribute("data-value");
+
+      if (dropdownBtn) {
+        dropdownBtn.innerText = value;
+      }
+
+      if (hiddenInput) {
+        hiddenInput.value = value;
+      }
+    });
+  });
+});
+// ===== FIX DROPDOWN CHỌN BÀN =====
+document.addEventListener("DOMContentLoaded", function () {
+  const btn = document.getElementById("tableDropdownBtn");
+  const hiddenInput = document.getElementById("tableId");
+
+  document.querySelectorAll(".dropdown-item").forEach((item) => {
+    item.addEventListener("click", function (e) {
+      e.preventDefault();
+
+      const value = this.getAttribute("data-value");
+
+      btn.innerText = "Bàn " + value;
+      hiddenInput.value = value;
+    });
+  });
+});
