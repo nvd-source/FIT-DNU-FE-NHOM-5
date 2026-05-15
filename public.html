@@ -328,12 +328,74 @@
                 <div class="invalid-feedback">Vui lòng chọn giờ đặt</div>
               </div>
               <div class="mb-3">
-                <label for="tableId" class="form-label">Chọn bàn *</label>
-                <select class="form-select" id="tableId" required>
-                  <option value="">Chọn bàn</option>
-                  <!-- Tables will be loaded here -->
-                </select>
-                <div class="invalid-feedback">Vui lòng chọn bàn</div>
+                <label class="form-label">Chọn bàn *</label>
+
+                <div class="dropdown">
+                  <button
+                    class="form-select text-start"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    id="tableDropdownBtn"
+                  >
+                    Chọn bàn
+                  </button>
+
+                  <ul class="dropdown-menu w-100">
+                    <li>
+                      <a class="dropdown-item" href="#" data-value="Bàn 1"
+                        >Bàn 1</a
+                      >
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="#" data-value="Bàn 2"
+                        >Bàn 2</a
+                      >
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="#" data-value="Bàn 3"
+                        >Bàn 3</a
+                      >
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="#" data-value="Bàn 4"
+                        >Bàn 4</a
+                      >
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="#" data-value="Bàn 5"
+                        >Bàn 5</a
+                      >
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="#" data-value="Bàn 6"
+                        >Bàn 6</a
+                      >
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="#" data-value="Bàn 7"
+                        >Bàn 7</a
+                      >
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="#" data-value="Bàn 8"
+                        >Bàn 8</a
+                      >
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="#" data-value="Bàn 9"
+                        >Bàn 9</a
+                      >
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="#" data-value="Bàn 10"
+                        >Bàn 10</a
+                      >
+                    </li>
+                  </ul>
+                </div>
+
+                <!-- input ẩn để submit form -->
+                <input type="hidden" id="tableId" name="tableId" />
               </div>
               <div class="mb-3">
                 <label for="guests" class="form-label">Số người *</label>
