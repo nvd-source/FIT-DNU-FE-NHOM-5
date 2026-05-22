@@ -656,3 +656,6 @@ footer hr {
 ::-webkit-scrollbar-thumb:hover {
     background: var(--main-red-dark);
 }
+.floor-image img { filter: brightness(0.85); transition: transform .3s; }
+.floor-image:hover img { transform: scale(1.02); }
+#tablesVisualContainer .btn { border-radius: 10px; }

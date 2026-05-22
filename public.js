@@ -150,27 +150,77 @@ function filterMenu(category) {
 
 // ================== TABLES ==================
 async function loadTables() {
-    const tableSelect = document.getElementById('tableId');
+  const tableSelect = document.getElementById('tableId');
+  const tablesContainer = document.getElementById('tablesVisualContainer'); // hãy thêm div này vào public.html
 
-    try {
-        allTables = await CafeAPI.getTables();
+  try {
+    const tables = await CafeAPI.getTables();
+    allTables = tables || [];
 
-        tableSelect.innerHTML = '<option value="">Chọn bàn</option>';
-
-        allTables.forEach(table => {
-            if (table.status === 'available') {
-                const option = document.createElement('option');
-                option.value = table.id;
-                option.textContent = `Bàn ${table.id} (${table.capacity} người)`;
-                tableSelect.appendChild(option);
-            }
-        });
-
-    } catch (error) {
-        tableSelect.innerHTML = '<option>Không tải được bàn</option>';
+    // Select options (keeps existing select behaviour)
+    if (tableSelect) {
+      tableSelect.innerHTML = '<option value=\"\">Chọn bàn</option>';
+      allTables.forEach(t => {
+        if (t.status === 'available') {
+          const opt = document.createElement('option');
+          opt.value = t.id;
+          opt.textContent = `Bàn ${t.id} (${t.capacity} người)`;
+          tableSelect.appendChild(opt);
+        }
+      });
     }
-}
 
+    // Visual render: group by floor
+    if (tablesContainer) {
+      tablesContainer.innerHTML = '';
+      const floors = [...new Set(allTables.map(t => t.floor || 1))].sort();
+
+      floors.forEach(floor => {
+        const floorTables = allTables.filter(t => (t.floor || 1) === floor);
+        const floorCard = document.createElement('div');
+        floorCard.className = 'mb-4';
+
+        floorCard.innerHTML = `
+          <h5 class="text-center mb-2">Tầng ${floor}</h5>
+          <div class="floor-image position-relative rounded overflow-hidden shadow-sm" style="background:#f5f5f5">
+            <img src="${floor === 1 ? 'assets/floor1.jpg' : 'assets/floor2.jpg'}" alt="Tầng ${floor}" class="img-fluid w-100" style="max-height:320px; object-fit:cover;">
+            <div class="floor-overlay position-absolute top-0 start-0 w-100 h-100 p-3" style="pointer-events:none;"></div>
+          </div>
+          <div class="d-flex flex-wrap gap-2 mt-2 justify-content-center" id="floor-${floor}-buttons"></div>
+        `;
+        tablesContainer.appendChild(floorCard);
+
+        const btnContainer = floorCard.querySelector(`#floor-${floor}-buttons`);
+        floorTables.forEach(t => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'btn btn-sm';
+          btn.style.minWidth = '110px';
+          btn.textContent = `Bàn ${t.id} (${t.capacity})`;
+          if (t.status === 'available') {
+            btn.classList.add('btn-outline-success');
+            btn.addEventListener('click', () => {
+              // clear active
+              btnContainer.querySelectorAll('.btn').forEach(b => b.classList.remove('btn-primary', 'text-white'));
+              btn.classList.remove('btn-outline-success');
+              btn.classList.add('btn-primary', 'text-white');
+              // sync select
+              if (tableSelect) tableSelect.value = t.id;
+            });
+          } else {
+            btn.classList.add('btn-outline-secondary');
+            btn.disabled = true;
+          }
+          btnContainer.appendChild(btn);
+        });
+      });
+    }
+
+  } catch (err) {
+    if (tableSelect) tableSelect.innerHTML = '<option>Không tải được bàn</option>';
+    if (tablesContainer) tablesContainer.innerHTML = '<div class="text-center text-danger">Không tải được thông tin bàn</div>';
+  }
+}
 // ================== FORM ==================
 async function handleReservationSubmit(e) {
     e.preventDefault();

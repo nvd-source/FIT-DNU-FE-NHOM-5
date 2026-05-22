@@ -20,20 +20,25 @@
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-md-5">
-                    <div class="card shadow-sm">
-                        <div class="card-body p-4">
-                            <h3 class="text-center mb-3">Đăng nhập Admin</h3>
+                    <div class="card shadow-lg border-0">
+                        <div class="card-body p-5">
+                            <h3 class="text-center mb-4 fw-bold">Đăng nhập Admin</h3>
                             <form id="adminLoginForm" novalidate>
                                 <div class="mb-3">
-                                    <label for="adminUser" class="form-label">Tên đăng nhập</label>
-                                    <input id="adminUser" class="form-control" required placeholder="admin">
+                                    <label for="adminUser" class="form-label fw-bold">Tên đăng nhập</label>
+                                    <input id="adminUser" class="form-control form-control-lg" required placeholder="Nhập tên đăng nhập">
+                                    <div class="invalid-feedback">Vui lòng nhập tên đăng nhập</div>
                                 </div>
-                                <div class="mb-3">
-                                    <label for="adminPass" class="form-label">Mật khẩu</label>
-                                    <input id="adminPass" type="password" class="form-control" required placeholder="••••••••">
+                                <div class="mb-4">
+                                    <label for="adminPass" class="form-label fw-bold">Mật khẩu</label>
+                                    <input id="adminPass" type="password" class="form-control form-control-lg" required placeholder="Nhập mật khẩu">
+                                    <div class="invalid-feedback">Vui lòng nhập mật khẩu</div>
                                 </div>
-                                <button type="submit" class="btn btn-danger w-100">Đăng nhập</button>
+                                <button type="submit" class="btn btn-danger w-100 btn-lg fw-bold">Đăng nhập</button>
                             </form>
+                            <div class="alert alert-info mt-3 mb-0">
+                                <small><strong>Demo:</strong> Tên: admin | Mật khẩu: admin010101</small>
+                            </div>
                         </div>
                     </div>
                 </div>
