@@ -89,8 +89,9 @@ async function loadDashboard() {
     try {
         const reservations = await CafeAPI.getReservations();
 
-        // chỉ tính bàn chưa hủy
-        const activeReservations = reservations.filter(r => r.status !== 'cancelled');
+        const activeReservations = reservations.filter(r =>
+            r.status === 'pending' || r.status === 'confirmed'
+        );
 
         const total = activeReservations.length;
         const pending = reservations.filter(r => r.status === 'pending').length;
