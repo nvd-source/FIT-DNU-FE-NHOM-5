@@ -227,7 +227,6 @@ function filterMenu(category) {
 
 // ================== FORM ==================
 async function handleReservationSubmit(e) {
-
     e.preventDefault();
 
     const form = e.target;
@@ -238,68 +237,54 @@ async function handleReservationSubmit(e) {
         return;
     }
 
-    const data = {
-
-        guestName: document.getElementById('guestName').value.trim(),
-
-        phone: document.getElementById('phone').value.trim(),
-
-        email: document.getElementById('email').value.trim(),
-
-        date: document.getElementById('reservationDate').value,
-
-        time: document.getElementById('reservationTime').value,
-
-        tableId: document.getElementById('tableId').value,
-
-        guests: document.getElementById('guests').value,
-
-        notes: document.getElementById('notes').value.trim(),
-
-        status: 'pending'
-    };
-
     try {
+
+        // lấy danh sách đặt bàn
+        const reservations = await CafeAPI.getReservations();
+
+        // chỉ tính bàn chưa hủy
+        const activeReservations = reservations.filter(r => r.status !== 'cancelled');
+
+        // full 10 bàn
+        if (activeReservations.length >= 10) {
+            showToast('Quán đã full bàn!', 'danger');
+            return;
+        }
+
+        const data = {
+            guestName: document.getElementById('guestName').value.trim(),
+            phone: document.getElementById('phone').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            date: document.getElementById('reservationDate').value,
+            time: document.getElementById('reservationTime').value,
+            tableId: document.getElementById('tableId').value,
+            guests: document.getElementById('guests').value,
+            notes: document.getElementById('notes').value.trim(),
+            status: 'pending'
+        };
 
         const btn = form.querySelector('button[type="submit"]');
 
         btn.disabled = true;
-
-        btn.innerHTML = `
-            <i class="fas fa-spinner fa-spin"></i> Đang xử lý...
-        `;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
 
         await CafeAPI.createReservation(data);
 
-        showToast(
-            'Đặt bàn thành công! Chúng tôi sẽ xác nhận trong giây lát',
-            'success'
-        );
+        showToast('Đặt bàn thành công!', 'success');
 
         form.reset();
-
         form.classList.remove('was-validated');
 
         localStorage.removeItem('reservationData');
 
         setTimeout(() => {
-
             window.location.href = 'index.html';
-
-        }, 2000);
+        }, 1500);
 
     } catch (err) {
+        console.error(err);
 
-        showToast(
-            'Lỗi khi đặt bàn. Vui lòng thử lại!',
-            'danger'
-        );
-
-        const btn = form.querySelector('button[type="submit"]');
-
-        btn.disabled = false;
-
-        btn.textContent = 'Đặt bàn';
+        showToast('Lỗi khi đặt bàn!', 'danger');
     }
 }
 
