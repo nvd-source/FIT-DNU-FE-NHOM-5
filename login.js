@@ -1,8 +1,7 @@
-// Admin login handler
-
 const adminLoginForm = document.getElementById('adminLoginForm');
 
 function showToast(message, type = 'danger') {
+
     const toastHtml = `
         <div class="toast align-items-center text-white bg-${type} border-0" role="alert">
             <div class="d-flex">
@@ -35,15 +34,15 @@ function showToast(message, type = 'danger') {
 }
 
 function handleAdminLogin(event) {
+
     event.preventDefault();
 
     const username = document.getElementById('adminUser').value.trim();
     const password = document.getElementById('adminPass').value.trim();
 
-    // Tài khoản admin
     if (username === 'admin' && password === '123456') {
 
-        localStorage.setItem('adminLoggedIn', 'true');
+        sessionStorage.setItem('adminLoggedIn', 'true');
 
         showToast('Đăng nhập thành công', 'success');
 
@@ -52,23 +51,16 @@ function handleAdminLogin(event) {
         }, 1500);
 
     } else {
+
         showToast('Sai tài khoản hoặc mật khẩu', 'danger');
-    }
-}
 
-function checkAlreadyLoggedIn() {
-    const isLoggedIn = localStorage.getItem('adminLoggedIn');
-
-    if (isLoggedIn === 'true') {
-        window.location.href = 'admin.html';
     }
 }
 
 document.addEventListener('DOMContentLoaded', function () {
 
-    checkAlreadyLoggedIn();
-
     if (adminLoginForm) {
         adminLoginForm.addEventListener('submit', handleAdminLogin);
     }
+
 });
