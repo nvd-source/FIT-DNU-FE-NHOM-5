@@ -89,7 +89,10 @@ async function loadDashboard() {
     try {
         const reservations = await CafeAPI.getReservations();
 
-        const total = reservations.length;
+        // chỉ tính bàn chưa hủy
+        const activeReservations = reservations.filter(r => r.status !== 'cancelled');
+
+        const total = activeReservations.length;
         const pending = reservations.filter(r => r.status === 'pending').length;
         const confirmed = reservations.filter(r => r.status === 'confirmed').length;
 
@@ -101,7 +104,6 @@ async function loadDashboard() {
         console.error('Error loading dashboard:', error);
     }
 }
-
 // Menu Management
 async function loadMenu() {
     try {
