@@ -225,31 +225,15 @@ function filterMenu(category) {
     displayMenu(filtered);
 }
 
-// ================== FORM ==================
 async function handleReservationSubmit(e) {
     e.preventDefault();
 
     const form = e.target;
-
     form.classList.add('was-validated');
 
-    if (!form.checkValidity()) {
-        return;
-    }
+    if (!form.checkValidity()) return;
 
     try {
-
-        // lấy danh sách đặt bàn
-        const reservations = await CafeAPI.getReservations();
-
-        // chỉ tính bàn chưa hủy
-        const activeReservations = reservations.filter(r => r.status !== 'cancelled');
-
-        // full 10 bàn
-        if (activeReservations.length >= 10) {
-            showToast('Quán đã full bàn!', 'danger');
-            return;
-        }
 
         const data = {
             guestName: document.getElementById('guestName').value.trim(),
@@ -263,8 +247,23 @@ async function handleReservationSubmit(e) {
             status: 'pending'
         };
 
-        const btn = form.querySelector('button[type="submit"]');
+        // 🔥 CHECK TRÙNG BÀN
+        const reservations = await CafeAPI.getReservations();
 
+        const conflict = reservations.some(r =>
+            r.status !== 'cancelled' &&
+            r.tableId == data.tableId &&
+            r.date === data.date &&
+            r.time === data.time
+        );
+
+        if (conflict) {
+            showToast('Bàn này đã được đặt vào thời gian này!', 'danger');
+            return;
+        }
+
+        // loading button
+        const btn = form.querySelector('button[type="submit"]');
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
 
@@ -283,11 +282,9 @@ async function handleReservationSubmit(e) {
 
     } catch (err) {
         console.error(err);
-
         showToast('Lỗi khi đặt bàn!', 'danger');
     }
 }
-
 // ================== LOCAL STORAGE ==================
 function saveReservationData() {
 
