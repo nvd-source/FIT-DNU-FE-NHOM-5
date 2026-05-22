@@ -659,3 +659,28 @@ footer hr {
 .floor-image img { filter: brightness(0.85); transition: transform .3s; }
 .floor-image:hover img { transform: scale(1.02); }
 #tablesVisualContainer .btn { border-radius: 10px; }
+
+.table-map {
+  display: block;          /* căn giữa */
+  margin: 0 auto;          /* căn giữa */
+  max-width: 100%;         /* không vượt quá chiều ngang màn hình */
+  height: auto;            /* giữ tỷ lệ gốc */
+  border-radius: 12px;     /* bo góc mềm mại */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2); /* bóng mờ */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.table-map:hover {
+  transform: scale(1.05);  /* zoom nhẹ khi hover */
+  box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+}
+body {
+  padding-top: 90px; /* chỉnh theo chiều cao nav thực tế */
+}
+.hero {
+  background: linear-gradient(to right, #f9943c, #e24343); /* nền cà phê sang trọng */
+  color: #fff;
+}
+.hero h1, .hero p {
+  text-shadow: 0 2px 6px rgba(255, 255, 255, 0.964);
+}

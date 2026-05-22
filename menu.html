@@ -10,32 +10,31 @@
     <link href="https://fonts.googleapis.com/css2?family=SoDoSans:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
-        <div class="container">
-            <a class="navbar-brand" href="index.html">
-                <span class="text-dark">CAFE</span><span class="text-danger">PREMIUM</span>
-            </a>
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto gap-4">
-                    <li class="nav-item"><a class="nav-link fw-bold" href="index.html">Trang chủ</a></li>
-                    <li class="nav-item"><a class="nav-link fw-bold active" aria-current="page" href="menu.html">Thực đơn</a></li>
-                    <li class="nav-item"><a class="nav-link fw-bold" href="public.html">Đặt bàn</a></li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link fw-bold dropdown-toggle" href="#" id="loginDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="loginDropdown">
-                            <li><a class="dropdown-item" href="login-customer.html"><i class="fas fa-user me-2"></i>Đăng nhập khách</a></li>
-                            <li><a class="dropdown-item" href="login.html"><i class="fas fa-lock me-2"></i>Đăng nhập Admin</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-light fixed-top bg-white shadow-sm">
+  <div class="container">
+    <!-- Logo -->
+    <a class="navbar-brand fw-bold fs-4" href="index.html">
+      <span class="text-dark">CAFE</span><span class="text-danger">PREMIUM</span>
+    </a>
+
+    <!-- Menu items ngang -->
+    <ul class="navbar-nav d-flex flex-row ms-auto gap-4">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" href="index.html">Trang chủ</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link fw-bold" href="public.html">Đặt bàn</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link fw-bold" href="login.html">
+          <i class="fas fa-lock me-2"></i>Đăng nhập quản trị
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>
 
     <section class="hero py-5">
         <div class="container">
@@ -43,11 +42,9 @@
                 <div class="col-lg-6 text-white">
                     <h1 class="display-4 fw-bold mb-4">Thực đơn riêng của Cafe Premium</h1>
                     <p class="lead mb-4">Khám phá đồ uống được chọn lọc, từ cà phê thơm nồng đến trà thanh mát và sinh tố tươi mát.</p>
-                    <a href="public.html" class="btn btn-outline-light btn-lg me-3">Đặt bàn ngay</a>
-                    <a href="#menu-items" class="btn btn-light btn-lg">Xem thực đơn</a>
                 </div>
                 <div class="col-lg-6 text-center">
-                    <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=80" alt="Coffee menu" class="img-fluid rounded-4 shadow-lg">
+                    <img src="https://tb-static.uber.com/prod/image-proc/processed_images/8d1e50083df622dc16d48bf0875e6109/9ba9ffab5f885fc3dac87838b3357014.jpeg" alt="Coffee menu" class="img-fluid rounded-4 shadow-lg">
                 </div>
             </div>
         </div>
