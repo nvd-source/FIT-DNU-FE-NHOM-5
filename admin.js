@@ -287,54 +287,120 @@ async function saveDrink(){
   finally{$('#saveDrinkText').removeClass('d-none');$('#saveDrinkSpinner').addClass('d-none');$('#saveDrinkBtn').prop('disabled',false);}
 }
 
+// ===== IMPORT DRINKS FROM API =====
+async function openImportDrinksModal(){
+  document.getElementById('importDrinksUrl').value='';
+  document.getElementById('importDrinksResult').innerHTML='';
+  document.getElementById('importDrinksForm').reset();
+  new bootstrap.Modal(document.getElementById('importDrinksModal')).show();
+}
+
+async function importDrinksFromApi(){
+  const url=document.getElementById('importDrinksUrl').value.trim();
+  const resultDiv=document.getElementById('importDrinksResult');
+  
+  if(!url){
+    showError('importDrinksUrl','Vui lòng nhập URL API');
+    return;
+  }
+  
+  if(!url.startsWith('http://') && !url.startsWith('https://')){
+    showError('importDrinksUrl','URL phải bắt đầu với http:// hoặc https://');
+    return;
+  }
+  
+  clearError('importDrinksUrl');
+  $('#importDrinksText').addClass('d-none');
+  $('#importDrinksSpinner').removeClass('d-none');
+  $('#importDrinksBtn').prop('disabled',true);
+  resultDiv.innerHTML='<div class="text-center"><div class="cb-spinner"></div> Đang tải dữ liệu...</div>';
+  
+  try{
+    const data=await apiFetch(url);
+    const drinks=Array.isArray(data)?data:data.data||data.items||[];
+    
+    if(!drinks.length){
+      resultDiv.innerHTML='<div class="alert alert-warning"><i class="bi bi-exclamation-triangle me-2"></i>Không tìm thấy dữ liệu đồ uống trong API</div>';
+      return;
+    }
+    
+    let successCount=0,errorCount=0;
+    const results=[];
+    
+    for(const item of drinks){
+      try{
+        const drinkData={
+          name:item.name||item.title||item.productName||'',
+          price:Number(item.price)||0,
+          category:item.category||item.type||item.category_name||'Khác',
+          image:item.image||item.imageUrl||item.img||item.photo||'https://placehold.co/48x48/d8f3dc/2d6a4f?text=☕',
+          description:item.description||item.desc||item.notes||''
+        };
+        
+        if(!drinkData.name||!drinkData.price){
+          errorCount++;
+          results.push(`<small class="text-danger"><i class="bi bi-x-circle me-1"></i>${item.name||'(Không có tên)'} - Thiếu thông tin bắt buộc</small>`);
+          continue;
+        }
+        
+        await createDrink(drinkData);
+        successCount++;
+        results.push(`<small class="text-success"><i class="bi bi-check-circle me-1"></i>${drinkData.name}</small>`);
+      }catch(e){
+        errorCount++;
+        results.push(`<small class="text-danger"><i class="bi bi-x-circle me-1"></i>${item.name||'(Lỗi)'} - ${e.message}</small>`);
+      }
+    }
+    
+    resultDiv.innerHTML=`
+      <div class="alert alert-info mb-3">
+        <strong>Kết quả import:</strong> ${successCount} thành công, ${errorCount} thất bại
+      </div>
+      <div style="max-height:200px;overflow-y:auto;">
+        ${results.join('<br>')}
+      </div>
+    `;
+    
+    if(successCount>0){
+      showToast(`Đã thêm ${successCount} món thành công!`,'success');
+      setTimeout(()=>{
+        bootstrap.Modal.getInstance(document.getElementById('importDrinksModal')).hide();
+        loadAdminDrinks();
+        loadDashboard();
+      },1500);
+    }
+  }catch(e){
+    resultDiv.innerHTML=`<div class="alert alert-danger"><i class="bi bi-exclamation-circle me-2"></i>Lỗi: ${e.message}</div>`;
+    showError('importDrinksUrl',e.message);
+  }finally{
+    $('#importDrinksText').removeClass('d-none');
+    $('#importDrinksSpinner').addClass('d-none');
+    $('#importDrinksBtn').prop('disabled',false);
+  }
+}
+
 // ===== TABLES CRUD =====
 async function loadAdminTables(){
-  $('#adminTablesLoading').show();$('#adminTablesGrid').html('');
+  $('#tablesLoading').removeClass('d-none');$('#tablesTableBody').html('');
   try{
     adminTables=await getTables();
-    $('#adminTablesLoading').hide();
-    renderAdminTables(adminTables);
-    // stats
-    const av=adminTables.filter(t=>(t.status||'available')==='available').length;
-    const re=adminTables.filter(t=>t.status==='reserved').length;
-    const oc=adminTables.filter(t=>t.status==='occupied').length;
-    document.getElementById('tableStatAvail').textContent=av;
-    document.getElementById('tableStatReserved').textContent=re;
-    document.getElementById('tableStatOccupied').textContent=oc;
-  }catch{$('#adminTablesLoading').hide();showToast('Không thể tải bàn','error');}
+    $('#tablesLoading').addClass('d-none');
+    renderTablesTable(adminTables);
+  }catch{$('#tablesLoading').addClass('d-none');showToast('Không thể tải bàn','error');}
 }
 
-function renderAdminTables(tables){
-  const grid=document.getElementById('adminTablesGrid');
-  if(!tables||!tables.length){grid.innerHTML='<div class="col-12 text-center text-muted py-4">Chưa có bàn nào.</div>';return;}
-  const statusMap={available:['cb-status-confirmed','Còn trống'],reserved:['cb-status-pending','Đã đặt'],occupied:['cb-status-cancelled','Đang dùng']};
-  const iconMap={available:'bi-chair',reserved:'bi-calendar-check',occupied:'bi-person-fill'};
-  grid.innerHTML=tables.map(t=>{
-    const st=(t.status||'available').toLowerCase();
-    const[sCls,sLabel]=statusMap[st]||statusMap.available;
-    return`<div class="col-6 col-md-4 col-lg-3">
-      <div class="cb-admin-card text-center p-3 position-relative">
-        <div style="font-size:2rem;color:var(--green-main)" class="mb-2"><i class="bi ${iconMap[st]||'bi-chair'}"></i></div>
-        <div class="fw-600">${t.name||'Bàn '+t.id}</div>
-        <div class="text-muted small mb-2"><i class="bi bi-people me-1"></i>${t.capacity||2} khách · ${t.zone||'Indoor'}</div>
-        <span class="cb-status ${sCls} d-block mb-3">${sLabel}</span>
-        <div class="d-flex gap-2 justify-content-center flex-wrap">
-          <select class="form-select form-select-sm cb-input" style="width:auto;font-size:.75rem" onchange="quickUpdateTableStatus('${t.id}',this.value)">
-            <option value="available"${st==='available'?' selected':''}>Còn trống</option>
-            <option value="reserved"${st==='reserved'?' selected':''}>Đã đặt</option>
-            <option value="occupied"${st==='occupied'?' selected':''}>Đang dùng</option>
-          </select>
-          <button class="btn btn-sm btn-outline-success" onclick="openTableModal('${t.id}')"><i class="bi bi-pencil"></i></button>
-          <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete('table','${t.id}','${(t.name||'Bàn').replace(/'/g,'')}')"><i class="bi bi-trash3"></i></button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-async function quickUpdateTableStatus(id,status){
-  try{await updateTable(id,{status});showToast('Cập nhật trạng thái bàn','success');loadAdminTables();}
-  catch{showToast('Cập nhật thất bại','error');}
+function renderTablesTable(tables){
+  const tbody=document.getElementById('tablesTableBody');
+  if(!tables||!tables.length){tbody.innerHTML='<tr><td colspan="4" class="text-center text-muted py-4">Chưa có bàn nào.</td></tr>';return;}
+  tbody.innerHTML=tables.map(t=>`<tr>
+    <td><strong>${t.name||t.tableName||'—'}</strong></td>
+    <td><span class="badge bg-light text-dark border">${t.capacity||'—'} chỗ</span></td>
+    <td><span class="cb-status ${t.status==='available'?'cb-status-confirmed':'cb-status-pending'}">${t.status==='available'?'Trống':'Đang sử dụng'}</span></td>
+    <td class="text-nowrap">
+      <button class="btn btn-sm btn-outline-success me-1" onclick="openTableModal('${t.id}')" title="Sửa"><i class="bi bi-pencil"></i></button>
+      <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete('table','${t.id}','${(t.name||t.tableName||'').replace(/'/g,'')}')" title="Xóa"><i class="bi bi-trash3"></i></button>
+    </td>
+  </tr>`).join('');
 }
 
 function openTableModal(id=null){
@@ -342,13 +408,11 @@ function openTableModal(id=null){
   clearAllErrors(['tableName','tableCapacity']);
   if(id){
     const t=adminTables.find(x=>String(x.id)===String(id));
-    if(!t)return;
+    if(!t) return;
     document.getElementById('tableModalTitle').textContent='Sửa bàn';
     document.getElementById('tableId').value=t.id;
-    document.getElementById('tableName').value=t.name||'';
+    document.getElementById('tableName').value=t.name||t.tableName||'';
     document.getElementById('tableCapacity').value=t.capacity||'';
-    document.getElementById('tableStatus').value=t.status||'available';
-    document.getElementById('tableZone').value=t.zone||'Indoor';
   }else{
     document.getElementById('tableModalTitle').textContent='Thêm bàn mới';
     document.getElementById('tableForm').reset();
@@ -356,77 +420,44 @@ function openTableModal(id=null){
   new bootstrap.Modal(document.getElementById('tableEditModal')).show();
 }
 
-async function saveTable(){
+function validateTableForm(){
   clearAllErrors(['tableName','tableCapacity']);
   let valid=true;
   const name=document.getElementById('tableName').value.trim();
   const cap=Number(document.getElementById('tableCapacity').value);
   if(!name){showError('tableName','Tên bàn không được để trống');valid=false;}
-  if(!cap||cap<1){showError('tableCapacity','Sức chứa phải lớn hơn 0');valid=false;}
-  else if(cap>10){showError('tableCapacity','Tối đa 10 khách mỗi bàn');valid=false;}
-  if(!valid)return;
-  const data={name,capacity:cap,status:document.getElementById('tableStatus').value,zone:document.getElementById('tableZone').value};
+  if(!cap||cap<=0){showError('tableCapacity','Sức chứa phải lớn hơn 0');valid=false;}
+  return valid;
+}
+
+async function saveTable(){
+  if(!validateTableForm()) return;
+  const data={name:document.getElementById('tableName').value.trim(),capacity:Number(document.getElementById('tableCapacity').value),status:'available'};
+  $('#saveTableText').addClass('d-none');$('#saveTableSpinner').removeClass('d-none');$('#saveTableBtn').prop('disabled',true);
   try{
     if(editTableId){await updateTable(editTableId,data);showToast('Cập nhật bàn thành công!','success');}
-    else{await createTable(data);showToast('Thêm bàn thành công!','success');}
+    else{await createTable(data);showToast('Thêm bàn mới thành công!','success');}
     bootstrap.Modal.getInstance(document.getElementById('tableEditModal')).hide();
     loadAdminTables();
-  }catch{showToast('Lưu thất bại','error');}
+  }catch{showToast('Lưu thất bại. Vui lòng thử lại!','error');}
+  finally{$('#saveTableText').removeClass('d-none');$('#saveTableSpinner').addClass('d-none');$('#saveTableBtn').prop('disabled',false);}
 }
 
-// ===== RESERVATIONS =====
+// ===== RESERVATIONS CRUD =====
 async function loadAdminReservations(){
-  $('#reservLoading').show();$('#reservTableBody').html('');
-  jqGetReservations(
-    data=>{
-      adminReservations=data;filteredReservations=data;
-      $('#reservLoading').hide();
-      renderReservationsTable(paginate(filteredReservations,1));
-      renderPagination(filteredReservations.length);
-      updatePendingBadge();
-    },
-    ()=>{$('#reservLoading').hide();showToast('Không thể tải danh sách đặt bàn','error');}
-  );
+  $('#reservationsLoading').removeClass('d-none');$('#reservationsTableBody').html('');
+  try{
+    adminReservations=await getReservations();
+    $('#reservationsLoading').addClass('d-none');
+    filteredReservations=adminReservations;
+    renderReservationsTable(adminReservations);
+  }catch{$('#reservationsLoading').addClass('d-none');showToast('Không thể tải đơn','error');}
 }
 
-function filterReservations(){
-  const type=document.getElementById('filterType').value;
-  const status=document.getElementById('filterStatus').value;
-  filteredReservations=adminReservations.filter(r=>{
-    const tMatch=!type||(r.type||'reservation')===type||(r.orderType&&type==='order');
-    const sMatch=!status||r.status===status;
-    return tMatch&&sMatch;
-  });
-  currentPage=1;
-  renderReservationsTable(paginate(filteredReservations,1));
-  renderPagination(filteredReservations.length);
-}
-
-function paginate(list,page){return list.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);}
-
-function renderPagination(total){
-  const pages=Math.ceil(total/PAGE_SIZE);
-  const c=document.getElementById('reservPagination');
-  if(!c||pages<=1){if(c)c.innerHTML='';return;}
-  let h='<nav><ul class="pagination pagination-sm">';
-  h+=`<li class="page-item${currentPage===1?' disabled':''}"><button class="page-link" onclick="goPage(${currentPage-1})">‹</button></li>`;
-  for(let i=1;i<=pages;i++)h+=`<li class="page-item${i===currentPage?' active':''}"><button class="page-link" onclick="goPage(${i})">${i}</button></li>`;
-  h+=`<li class="page-item${currentPage===pages?' disabled':''}"><button class="page-link" onclick="goPage(${currentPage+1})">›</button></li>`;
-  h+='</ul></nav>';c.innerHTML=h;
-}
-
-function goPage(page){
-  const pages=Math.ceil(filteredReservations.length/PAGE_SIZE);
-  if(page<1||page>pages)return;
-  currentPage=page;
-  renderReservationsTable(paginate(filteredReservations,page));
-  renderPagination(filteredReservations.length);
-}
-
-function renderReservationsTable(list){
-  const tbody=document.getElementById('reservTableBody');
-  if(!list||!list.length){tbody.innerHTML='<tr><td colspan="9" class="text-center text-muted py-4">Không có đơn nào.</td></tr>';return;}
-  tbody.innerHTML=list.map(r=>{
+function renderReservationsTable(reservations){
+  const tbody=document.getElementById('reservationsTableBody');
+  if(!reservations||!reservations.length){tbody.innerHTML='<tr><td colspan="9" class="text-center text-muted py-4">Chưa có đơn nào.</td></tr>';return;}
+  tbody.innerHTML=reservations.map(r=>{
     const rtype=r.type||'reservation';
     const items=r.items?`${r.items.length} món`:'';
     const detail=rtype==='order'?items:`${r.guestCount||'—'} khách`;
