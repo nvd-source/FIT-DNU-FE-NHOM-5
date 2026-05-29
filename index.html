@@ -1,33 +1,38 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>CaféBook — Đặt bàn & Thực đơn</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
-  <link href="style.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+  <link href="style.css" rel="stylesheet"/>
 </head>
 <body>
 
-<!-- NAVBAR -->
+<!-- ======== NAVBAR (Bootstrap: Navbar component) ======== -->
 <nav class="navbar navbar-expand-lg cb-navbar sticky-top">
   <div class="container">
     <a class="navbar-brand cb-brand" href="#"><i class="bi bi-cup-hot-fill"></i> CaféBook</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
-      <span class="navbar-toggler-icon"></span>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+      <i class="bi bi-list fs-4 text-white"></i>
     </button>
     <div class="collapse navbar-collapse" id="mainNav">
       <ul class="navbar-nav ms-auto align-items-center gap-1">
         <li class="nav-item"><a class="nav-link cb-nav-link" href="#menu-section"><i class="bi bi-cup me-1"></i>Thực đơn</a></li>
         <li class="nav-item"><a class="nav-link cb-nav-link" href="#order-section"><i class="bi bi-bag me-1"></i>Đặt món</a></li>
         <li class="nav-item"><a class="nav-link cb-nav-link" href="#tables-section"><i class="bi bi-calendar-check me-1"></i>Đặt bàn</a></li>
-        <li class="nav-item"><a class="nav-link cb-nav-link" href="#notifications-section"><i class="bi bi-bell me-1"></i>Thông báo <span id="notifBadge" class="cb-notif-badge d-none">0</span></a></li>
+        <li class="nav-item">
+          <a class="nav-link cb-nav-link position-relative" href="#notifications-section">
+            <i class="bi bi-bell me-1"></i>Thông báo
+            <span id="notifBadge" class="cb-notif-badge d-none">0</span>
+          </a>
+        </li>
         <li class="nav-item">
           <button class="btn cb-btn-outline ms-2" id="loginBtn"><i class="bi bi-person-circle me-1"></i>Đăng nhập</button>
         </li>
         <li class="nav-item">
-          <button class="btn cb-btn-cart ms-1 position-relative" id="cartBtn">
+          <button class="btn cb-btn-cart ms-1" id="cartBtn">
             <i class="bi bi-bag"></i>
             <span class="cb-cart-badge" id="cartCount">0</span>
           </button>
@@ -37,22 +42,24 @@
   </div>
 </nav>
 
-<!-- HERO -->
+<!-- ======== HERO ======== -->
 <section class="cb-hero">
   <div class="container">
     <div class="row align-items-center" style="min-height:520px">
       <div class="col-lg-6 py-5">
-        <span class="badge cb-badge-green mb-3 fs-6 px-3 py-2"><i class="bi bi-star-fill me-1"></i>Quán cà phê & Sách</span>
+        <!-- Bootstrap: Badge component -->
+        <span class="badge cb-badge-green mb-3 fs-6 px-3 py-2"><i class="bi bi-star-fill me-1"></i>Cafe & Sách</span>
         <h1 class="cb-hero-title">Không gian thư giãn<br><span class="cb-text-accent">giữa lòng thành phố</span></h1>
-        <p class="cb-hero-sub mt-3 mb-4">Đặt bàn trước, chọn đồ uống yêu thích và tận hưởng buổi đọc sách tuyệt vời cùng CaféBook.</p>
+        <p class="cb-hero-sub mt-3 mb-4">Đặt bàn trước, chọn đồ uống yêu thích và tận hưởng buổi đọc sách tuyệt vời.</p>
         <div class="d-flex gap-3 flex-wrap">
           <a href="#order-section" class="btn cb-btn-primary px-4 py-2"><i class="bi bi-bag-plus me-2"></i>Đặt món ngay</a>
           <a href="#tables-section" class="btn cb-btn-outline-dark px-4 py-2"><i class="bi bi-calendar-check me-2"></i>Đặt bàn</a>
         </div>
         <div class="cb-hero-pills mt-4">
           <span class="cb-pill"><i class="bi bi-clock me-1"></i>07:00 – 23:00</span>
-          <span class="cb-pill"><i class="bi bi-geo-alt me-1"></i>BĐ TP.HN</span>
+          <span class="cb-pill"><i class="bi bi-geo-alt me-1"></i>Q.1, TP.HCM</span>
           <span class="cb-pill"><i class="bi bi-star-fill me-1 cb-gold"></i>4.9 / 5</span>
+          <span class="cb-pill"><i class="bi bi-wifi me-1"></i>Free WiFi</span>
         </div>
       </div>
       <div class="col-lg-6 text-center mt-4 mt-lg-0">
@@ -72,52 +79,60 @@
   </div>
 </section>
 
-<!-- MENU SECTION -->
+<!-- ======== MENU SECTION ======== -->
 <section class="py-5" id="menu-section">
   <div class="container">
     <div class="text-center mb-4">
       <span class="cb-section-tag">Thực đơn</span>
-      <h2 class="cb-section-title mt-2">Đồ uống tinh tuyển</h2>
-      <p class="cb-section-sub">Khám phá các loại đồ uống được pha chế thủ công mỗi ngày</p>
+      <h2 class="cb-section-title mt-2">Đồ uống & Bánh ngon</h2>
+      <p class="cb-section-sub">Pha chế thủ công mỗi ngày — tươi ngon đảm bảo</p>
     </div>
+    <!-- Filter tabs (Bootstrap: Button group) -->
     <div class="d-flex justify-content-center flex-wrap gap-2 mb-4" id="filterTabs">
       <button class="btn cb-filter-btn active" data-filter="all"><i class="bi bi-grid me-1"></i>Tất cả</button>
       <button class="btn cb-filter-btn" data-filter="Cà phê"><i class="bi bi-cup-hot me-1"></i>Cà phê</button>
       <button class="btn cb-filter-btn" data-filter="Trà"><i class="bi bi-leaf me-1"></i>Trà</button>
       <button class="btn cb-filter-btn" data-filter="Sinh tố"><i class="bi bi-apple me-1"></i>Sinh tố</button>
+      <button class="btn cb-filter-btn" data-filter="Nước ép"><i class="bi bi-droplet me-1"></i>Nước ép</button>
+      <button class="btn cb-filter-btn" data-filter="Bánh"><i class="bi bi-cake2 me-1"></i>Bánh</button>
       <button class="btn cb-filter-btn" data-filter="Snack"><i class="bi bi-egg-fried me-1"></i>Snack</button>
     </div>
+    <!-- Bootstrap: Form -->
     <div class="row justify-content-center mb-4">
       <div class="col-md-6">
         <div class="input-group cb-search-group">
           <span class="input-group-text cb-search-icon"><i class="bi bi-search"></i></span>
-          <input type="text" class="form-control cb-search-input" id="searchDrink" placeholder="Tìm kiếm đồ uống..." />
+          <input type="text" class="form-control cb-search-input" id="searchDrink" placeholder="Tìm kiếm đồ uống, bánh..."/>
         </div>
       </div>
     </div>
+    <!-- Skeleton loading -->
     <div id="menuLoading" class="row g-3"></div>
+    <!-- Menu grid -->
     <div class="row g-3" id="menuGrid"></div>
+    <!-- Error state -->
     <div id="menuError" class="text-center py-5 d-none">
       <i class="bi bi-exclamation-triangle text-warning" style="font-size:2.5rem"></i>
-      <p class="mt-2 text-muted">Không thể tải thực đơn.</p>
-      <button class="btn cb-btn-primary mt-2" onclick="loadDrinks()">Thử lại</button>
+      <p class="mt-2 text-muted">Không thể tải thực đơn. Vui lòng kiểm tra kết nối.</p>
+      <button class="btn cb-btn-primary mt-2" onclick="loadDrinks()"><i class="bi bi-arrow-clockwise me-1"></i>Thử lại</button>
     </div>
   </div>
 </section>
 
-<!-- ORDER SECTION (Đặt món) -->
+<!-- ======== ORDER SECTION ======== -->
 <section class="py-5 cb-order-bg" id="order-section">
   <div class="container">
     <div class="text-center mb-4">
       <span class="cb-section-tag">Đặt món</span>
       <h2 class="cb-section-title mt-2">Chọn hình thức phục vụ</h2>
-      <p class="cb-section-sub">Dùng tại quán, mang về hoặc đặt online — linh hoạt theo nhu cầu của bạn</p>
+      <p class="cb-section-sub">Dùng tại quán, mang về hoặc đặt online — linh hoạt theo nhu cầu</p>
     </div>
+    <!-- Order type selector -->
     <div class="row justify-content-center mb-4">
       <div class="col-lg-8">
         <div class="cb-order-type-tabs">
           <button class="cb-order-type-btn active" data-type="dine-in" onclick="setOrderType('dine-in',this)">
-            <i class="bi bi-house-heart"></i><span>Dùng tại quán</span>
+            <i class="bi bi-house-heart"></i><span>Tại quán</span>
           </button>
           <button class="cb-order-type-btn" data-type="takeaway" onclick="setOrderType('takeaway',this)">
             <i class="bi bi-bag-check"></i><span>Mang về</span>
@@ -130,20 +145,30 @@
     </div>
 
     <div class="row g-4">
-      <!-- Order menu quick pick -->
+      <!-- Menu chọn món -->
       <div class="col-lg-7">
         <div class="cb-card p-4">
           <h5 class="fw-600 mb-3"><i class="bi bi-cup me-2 cb-text-green"></i>Chọn món</h5>
           <div class="input-group cb-search-group mb-3">
             <span class="input-group-text cb-search-icon"><i class="bi bi-search"></i></span>
-            <input type="text" class="form-control cb-search-input" id="orderSearchDrink" placeholder="Tìm món..." />
+            <input type="text" class="form-control cb-search-input" id="orderSearchDrink" placeholder="Tìm món..."/>
+          </div>
+          <!-- Filter nhanh trong order -->
+          <div class="d-flex gap-2 flex-wrap mb-3" id="orderCatTabs">
+            <button class="btn cb-filter-btn cb-filter-sm active" data-cat="all">Tất cả</button>
+            <button class="btn cb-filter-btn cb-filter-sm" data-cat="Cà phê">Cà phê</button>
+            <button class="btn cb-filter-btn cb-filter-sm" data-cat="Trà">Trà</button>
+            <button class="btn cb-filter-btn cb-filter-sm" data-cat="Sinh tố">Sinh tố</button>
+            <button class="btn cb-filter-btn cb-filter-sm" data-cat="Nước ép">Nước ép</button>
+            <button class="btn cb-filter-btn cb-filter-sm" data-cat="Bánh">Bánh</button>
+            <button class="btn cb-filter-btn cb-filter-sm" data-cat="Snack">Snack</button>
           </div>
           <div id="orderMenuLoading" class="text-center py-3"><div class="cb-spinner"></div></div>
           <div class="cb-order-menu-list" id="orderMenuList"></div>
         </div>
       </div>
 
-      <!-- Order receipt -->
+      <!-- Receipt / hóa đơn -->
       <div class="col-lg-5">
         <div class="cb-card p-4 cb-receipt-card">
           <div class="d-flex justify-content-between align-items-center mb-3">
@@ -151,48 +176,51 @@
             <span class="cb-order-type-badge" id="orderTypeBadge">Tại quán</span>
           </div>
 
-          <!-- Dine-in fields -->
+          <!-- Thông tin khách – Tại quán -->
           <div id="dineInFields">
             <div class="row g-2 mb-3">
               <div class="col-6">
                 <label class="form-label cb-label">Tên khách</label>
-                <input type="text" class="form-control cb-input" id="orderGuestName" placeholder="Nguyễn Văn A" />
+                <input type="text" class="form-control cb-input" id="orderGuestName" placeholder="Nguyễn Văn A"/>
               </div>
               <div class="col-6">
-                <label class="form-label cb-label">Bàn số</label>
+                <label class="form-label cb-label">Số bàn</label>
                 <select class="form-select cb-input" id="orderTableSelect">
-                  <option value="">Chọn bàn</option>
+                  <option value="">-- Chọn bàn --</option>
                 </select>
               </div>
             </div>
           </div>
 
-          <!-- Takeaway / online fields -->
+          <!-- Thông tin – Mang về / Online -->
           <div id="deliveryFields" class="d-none">
-            <div class="mb-3">
+            <div class="mb-2">
               <label class="form-label cb-label">Họ tên <span class="text-danger">*</span></label>
-              <input type="text" class="form-control cb-input" id="orderDeliveryName" placeholder="Nguyễn Văn A" />
+              <input type="text" class="form-control cb-input" id="orderDeliveryName" placeholder="Nguyễn Văn A"/>
+              <div class="cb-error-msg" id="err-orderDeliveryName"></div>
             </div>
-            <div class="mb-3">
+            <div class="mb-2">
               <label class="form-label cb-label">Số điện thoại <span class="text-danger">*</span></label>
-              <input type="tel" class="form-control cb-input" id="orderDeliveryPhone" placeholder="0901234567" />
+              <input type="tel" class="form-control cb-input" id="orderDeliveryPhone" placeholder="0901234567"/>
+              <div class="cb-error-msg" id="err-orderDeliveryPhone"></div>
             </div>
-            <div id="addressField" class="mb-3 d-none">
+            <div id="addressField" class="mb-2 d-none">
               <label class="form-label cb-label">Địa chỉ giao hàng <span class="text-danger">*</span></label>
-              <input type="text" class="form-control cb-input" id="orderAddress" placeholder="123 Đường ABC, Quận 1" />
+              <input type="text" class="form-control cb-input" id="orderAddress" placeholder="123 Đường ABC, Quận 1"/>
+              <div class="cb-error-msg" id="err-orderAddress"></div>
             </div>
           </div>
 
-          <!-- Order items list -->
+          <!-- Danh sách món đặt -->
           <div class="cb-receipt-items" id="receiptItems">
             <div class="text-center py-4 text-muted">
               <i class="bi bi-bag" style="font-size:2rem;opacity:.3"></i>
-              <p class="mt-2 small">Chưa có món nào</p>
+              <p class="mt-2 small">Chưa có món — chọn từ danh sách bên trái</p>
             </div>
           </div>
 
-          <!-- Totals -->
-          <div class="cb-receipt-total mt-3" id="receiptTotal" style="display:none">
+          <!-- Tổng tiền -->
+          <div class="cb-receipt-total mt-2" id="receiptTotal" style="display:none">
             <div class="d-flex justify-content-between mb-1 small text-muted">
               <span>Tạm tính</span><span id="receiptSubtotal">0đ</span>
             </div>
@@ -201,18 +229,51 @@
             </div>
             <hr class="my-2"/>
             <div class="d-flex justify-content-between fw-bold">
-              <span>Tổng cộng</span><span class="cb-text-green fs-5" id="receiptGrandTotal">0đ</span>
+              <span>Tổng cộng</span>
+              <span class="cb-text-green fs-5" id="receiptGrandTotal">0đ</span>
             </div>
           </div>
 
-          <!-- Note -->
-          <div class="mt-3 mb-3">
+          <!-- Ghi chú -->
+          <div class="mt-3 mb-2">
             <label class="form-label cb-label">Ghi chú</label>
-            <input type="text" class="form-control cb-input" id="orderNote" placeholder="Ít đường, nhiều đá..." />
+            <input type="text" class="form-control cb-input" id="orderNote" placeholder="Ít đường, nhiều đá, không hành..."/>
+          </div>
+
+          <!-- ===== PHƯƠNG THỨC THANH TOÁN ===== -->
+          <div class="mb-3">
+            <label class="form-label cb-label">Phương thức thanh toán</label>
+            <div class="cb-payment-methods">
+              <label class="cb-payment-option" id="payOptCash">
+                <input type="radio" name="payMethod" value="cash" checked onchange="selectPayMethod('cash')"/>
+                <span class="cb-pay-icon"><i class="bi bi-cash-stack"></i></span>
+                <span class="cb-pay-label">Tiền mặt</span>
+                <i class="bi bi-check-circle-fill cb-pay-check"></i>
+              </label>
+              <label class="cb-payment-option" id="payOptQR">
+                <input type="radio" name="payMethod" value="qr" onchange="selectPayMethod('qr')"/>
+                <span class="cb-pay-icon cb-pay-qr-icon"><i class="bi bi-qr-code-scan"></i></span>
+                <span class="cb-pay-label">Quét QR</span>
+                <i class="bi bi-check-circle-fill cb-pay-check"></i>
+              </label>
+            </div>
+          </div>
+
+          <!-- QR hiển thị khi chọn QR -->
+          <div id="qrPaymentBox" class="cb-qr-box d-none mb-3">
+            <div class="cb-qr-inner text-center">
+              <p class="small fw-600 mb-2 cb-text-green"><i class="bi bi-qr-code me-1"></i>Quét mã để thanh toán</p>
+              <div class="cb-qr-img-wrap">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=cafebook-payment-demo&color=1a3d2f" alt="QR Code" class="cb-qr-img"/>
+              </div>
+              <p class="small text-muted mt-2 mb-1">Ngân hàng: <strong>VietQR</strong></p>
+              <p class="small text-muted mb-0">STK: <strong>9999 0000 1234</strong></p>
+              <p class="small text-muted mb-0">CaféBook — <span id="qrAmount" class="cb-text-green fw-bold">0đ</span></p>
+            </div>
           </div>
 
           <div class="cb-error-msg mb-2" id="err-order"></div>
-          <button class="btn cb-btn-primary w-100 py-2" onclick="placeOrder()" id="placeOrderBtn">
+          <button class="btn cb-btn-primary w-100 py-2 mt-1" onclick="placeOrder()" id="placeOrderBtn">
             <span id="placeOrderText"><i class="bi bi-check-circle me-2"></i>Đặt hàng</span>
             <span id="placeOrderSpinner" class="d-none"><div class="cb-spinner-sm d-inline-block me-2"></div>Đang xử lý...</span>
           </button>
@@ -222,7 +283,7 @@
   </div>
 </section>
 
-<!-- TABLES SECTION -->
+<!-- ======== TABLES SECTION ======== -->
 <section class="py-5 cb-tables-bg" id="tables-section">
   <div class="container">
     <div class="text-center mb-4">
@@ -231,13 +292,14 @@
       <p class="cb-section-sub">Xem trạng thái bàn theo thời gian thực và đặt trước</p>
     </div>
     <div class="row g-4">
+      <!-- Sơ đồ bàn -->
       <div class="col-lg-7">
         <div class="cb-card p-4">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="fw-600 mb-0"><i class="bi bi-layout-split me-2 cb-text-green"></i>Sơ đồ bàn</h5>
             <button class="btn cb-btn-sm" onclick="loadTables()"><i class="bi bi-arrow-clockwise me-1"></i>Làm mới</button>
           </div>
-          <div class="d-flex gap-3 mb-3 flex-wrap">
+          <div class="d-flex gap-2 mb-3 flex-wrap">
             <span class="cb-legend cb-legend-available">Còn trống</span>
             <span class="cb-legend cb-legend-reserved">Đã đặt</span>
             <span class="cb-legend cb-legend-occupied">Đang dùng</span>
@@ -246,29 +308,31 @@
           <div class="row g-3" id="tablesGrid"></div>
         </div>
       </div>
+
+      <!-- Form đặt bàn (Bootstrap: Form component) -->
       <div class="col-lg-5">
         <div class="cb-card p-4">
           <h5 class="fw-600 mb-3"><i class="bi bi-calendar-plus me-2 cb-text-green"></i>Thông tin đặt bàn</h5>
           <form id="bookingForm" novalidate>
             <div class="mb-3">
               <label class="form-label cb-label">Họ tên <span class="text-danger">*</span></label>
-              <input type="text" class="form-control cb-input" id="guestName" placeholder="Nguyễn Văn A" />
+              <input type="text" class="form-control cb-input" id="guestName" placeholder="Nguyễn Văn A"/>
               <div class="cb-error-msg" id="err-guestName"></div>
             </div>
             <div class="mb-3">
               <label class="form-label cb-label">Số điện thoại <span class="text-danger">*</span></label>
-              <input type="tel" class="form-control cb-input" id="guestPhone" placeholder="0901234567" />
+              <input type="tel" class="form-control cb-input" id="guestPhone" placeholder="0901234567"/>
               <div class="cb-error-msg" id="err-guestPhone"></div>
             </div>
             <div class="mb-3">
               <label class="form-label cb-label">Email</label>
-              <input type="email" class="form-control cb-input" id="guestEmail" placeholder="email@example.com" />
+              <input type="email" class="form-control cb-input" id="guestEmail" placeholder="email@example.com"/>
               <div class="cb-error-msg" id="err-guestEmail"></div>
             </div>
             <div class="row g-2 mb-3">
               <div class="col-6">
                 <label class="form-label cb-label">Ngày <span class="text-danger">*</span></label>
-                <input type="date" class="form-control cb-input" id="bookDate" />
+                <input type="date" class="form-control cb-input" id="bookDate"/>
                 <div class="cb-error-msg" id="err-bookDate"></div>
               </div>
               <div class="col-6">
@@ -286,17 +350,17 @@
             </div>
             <div class="mb-3">
               <label class="form-label cb-label">Số khách <span class="text-danger">*</span> <small class="text-muted">(tối đa 10)</small></label>
-              <input type="number" class="form-control cb-input" id="guestCount" min="1" max="10" placeholder="2" />
+              <input type="number" class="form-control cb-input" id="guestCount" min="1" max="10" placeholder="2"/>
               <div class="cb-error-msg" id="err-guestCount"></div>
             </div>
             <div class="mb-3">
               <label class="form-label cb-label">Bàn đã chọn</label>
-              <input type="text" class="form-control cb-input cb-input-readonly" id="selectedTableDisplay" readonly placeholder="Nhấn chọn bàn trên sơ đồ" />
+              <input type="text" class="form-control cb-input cb-input-readonly" id="selectedTableDisplay" readonly placeholder="Nhấn chọn bàn ở sơ đồ bên trái"/>
               <div class="cb-error-msg" id="err-table"></div>
             </div>
             <div class="mb-3">
               <label class="form-label cb-label">Ghi chú</label>
-              <textarea class="form-control cb-input" id="bookNote" rows="2" placeholder="Yêu cầu đặc biệt, dị ứng thực phẩm..."></textarea>
+              <textarea class="form-control cb-input" id="bookNote" rows="2" placeholder="Yêu cầu đặc biệt, dị ứng..."></textarea>
             </div>
             <button type="submit" class="btn cb-btn-primary w-100 py-2" id="submitBookingBtn">
               <span id="bookingBtnText"><i class="bi bi-calendar-check me-2"></i>Xác nhận đặt bàn</span>
@@ -309,26 +373,25 @@
   </div>
 </section>
 
-<!-- NOTIFICATIONS SECTION -->
+<!-- ======== NOTIFICATIONS ======== -->
 <section class="py-5" id="notifications-section">
   <div class="container">
     <div class="text-center mb-4">
       <span class="cb-section-tag">Thông báo</span>
       <h2 class="cb-section-title mt-2">Thông báo của bạn</h2>
-      <p class="cb-section-sub">Kiểm tra trạng thái đặt bàn, đơn hàng và ưu đãi đặc biệt</p>
+      <p class="cb-section-sub">Trạng thái đặt bàn, đơn hàng và ưu đãi đặc biệt</p>
     </div>
     <div class="row justify-content-center">
       <div class="col-lg-8">
+        <!-- Bootstrap: Card component -->
         <div class="cb-promo-banner mb-4 p-4">
           <div class="row align-items-center">
             <div class="col-8">
               <span class="badge bg-warning text-dark mb-2">🎁 Ưu đãi đặc biệt</span>
               <h5 class="text-white fw-bold mb-1">Giảm 20% cho lần đặt bàn đầu tiên!</h5>
-              <p class="text-white opacity-75 mb-0 small">Sử dụng mã: <strong>CAFEBOOK20</strong> khi đặt bàn online</p>
+              <p class="text-white opacity-75 mb-0 small">Mã: <strong>CAFEBOOK20</strong> khi đặt bàn online</p>
             </div>
-            <div class="col-4 text-end">
-              <i class="bi bi-gift cb-promo-icon"></i>
-            </div>
+            <div class="col-4 text-end"><i class="bi bi-gift cb-promo-icon"></i></div>
           </div>
         </div>
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -337,8 +400,8 @@
         </div>
         <div id="userNotifications">
           <div class="cb-notify-empty text-center py-5 text-muted">
-            <i class="bi bi-bell-slash" style="font-size:2.5rem;opacity:.4"></i>
-            <p class="mt-2">Chưa có thông báo nào.<br><small>Đặt bàn hoặc đặt món để nhận thông báo.</small></p>
+            <i class="bi bi-bell-slash" style="font-size:2.5rem;opacity:.35"></i>
+            <p class="mt-2">Chưa có thông báo.<br><small>Đặt bàn hoặc đặt món để nhận thông báo.</small></p>
           </div>
         </div>
       </div>
@@ -346,36 +409,31 @@
   </div>
 </section>
 
-<!-- CART SIDEBAR -->
+<!-- ======== CART SIDEBAR ======== -->
 <div class="cb-overlay" id="cartOverlay" onclick="closeCart()"></div>
 <div class="cb-sidebar" id="cartSidebar">
   <div class="cb-sidebar-header">
     <h5 class="mb-0"><i class="bi bi-bag me-2"></i>Giỏ hàng</h5>
-    <button class="btn-close" onclick="closeCart()"></button>
+    <button class="btn-close btn-close-white" onclick="closeCart()"></button>
   </div>
   <div class="cb-sidebar-body" id="cartItems">
     <div class="text-center py-5 text-muted">
-      <i class="bi bi-bag-x" style="font-size:2.5rem;opacity:.4"></i>
+      <i class="bi bi-bag-x" style="font-size:2.5rem;opacity:.3"></i>
       <p class="mt-2">Giỏ hàng trống</p>
     </div>
   </div>
   <div class="cb-sidebar-footer" id="cartFooter" style="display:none">
-    <div class="d-flex justify-content-between mb-1 small text-muted">
-      <span>Tạm tính:</span><span id="cartSubtotal">0đ</span>
-    </div>
-    <div class="d-flex justify-content-between mb-2 small text-muted">
-      <span>Thuế (10%):</span><span id="cartTaxAmt">0đ</span>
-    </div>
+    <div class="d-flex justify-content-between mb-1 small text-muted"><span>Tạm tính:</span><span id="cartSubtotal">0đ</span></div>
+    <div class="d-flex justify-content-between mb-2 small text-muted"><span>Thuế (10%):</span><span id="cartTaxAmt">0đ</span></div>
     <div class="d-flex justify-content-between mb-3 fw-bold">
-      <span>Tổng cộng:</span>
-      <span class="cb-text-green fs-5" id="cartTotal">0đ</span>
+      <span>Tổng cộng:</span><span class="cb-text-green fs-5" id="cartTotal">0đ</span>
     </div>
     <button class="btn cb-btn-primary w-100 mb-2" onclick="goToOrder()"><i class="bi bi-arrow-right me-2"></i>Tiến hành đặt hàng</button>
-    <button class="btn cb-btn-outline w-100" onclick="clearCart()"><i class="bi bi-trash3 me-2"></i>Xóa giỏ hàng</button>
+    <button class="btn cb-btn-outline-gray w-100" onclick="clearCart()"><i class="bi bi-trash3 me-2"></i>Xóa giỏ hàng</button>
   </div>
 </div>
 
-<!-- LOGIN MODAL -->
+<!-- ======== LOGIN MODAL (Bootstrap: Modal) ======== -->
 <div class="modal fade" id="loginModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content cb-modal">
@@ -396,7 +454,7 @@
             <label class="form-label cb-label">Tên đăng nhập</label>
             <div class="input-group">
               <span class="input-group-text cb-ig-text"><i class="bi bi-person"></i></span>
-              <input type="text" class="form-control cb-input" id="loginUsername" placeholder="Nhập tên đăng nhập" />
+              <input type="text" class="form-control cb-input" id="loginUsername" placeholder="guest"/>
             </div>
             <div class="cb-error-msg" id="err-loginUsername"></div>
           </div>
@@ -404,26 +462,26 @@
             <label class="form-label cb-label">Mật khẩu</label>
             <div class="input-group">
               <span class="input-group-text cb-ig-text"><i class="bi bi-lock"></i></span>
-              <input type="password" class="form-control cb-input" id="loginPassword" placeholder="••••••••" />
+              <input type="password" class="form-control cb-input" id="loginPassword" placeholder="••••••••"/>
               <button class="btn cb-ig-text" type="button" onclick="togglePwd()"><i class="bi bi-eye" id="eyeIcon"></i></button>
             </div>
             <div class="cb-error-msg" id="err-loginPassword"></div>
           </div>
           <div id="loginError" class="alert alert-danger py-2 d-none small"></div>
           <button type="submit" class="btn cb-btn-primary w-100 py-2 mt-1">
-            <span id="loginBtnText">Đăng nhập</span>
+            <span id="loginBtnText"><i class="bi bi-box-arrow-in-right me-1"></i>Đăng nhập</span>
             <span id="loginBtnSpinner" class="d-none"><div class="cb-spinner-sm d-inline-block me-2"></div>Đang xử lý...</span>
           </button>
         </form>
-        <div class="text-center mt-3">
-          <small class="text-muted">Demo Mk: <b>guest</b>/guest123 &nbsp;|&nbsp; <b>admin</b>/admin123</small>
+        <div class="text-center mt-3 p-2 cb-demo-hint">
+          <small class="text-muted">Demo: <b>guest</b>/guest123 &nbsp;|&nbsp; <b>admin</b>/admin123</small>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- DRINK DETAIL MODAL -->
+<!-- ======== DRINK DETAIL MODAL ======== -->
 <div class="modal fade" id="drinkModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content cb-modal">
@@ -432,7 +490,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body text-center">
-        <img id="drinkModalImg" src="" alt="" class="cb-drink-modal-img mb-3" onerror="this.src='https://placehold.co/300x200/d8f3dc/2d6a4f?text=CaféBook'" />
+        <img id="drinkModalImg" src="" alt="" class="cb-drink-modal-img mb-3" onerror="this.src='https://placehold.co/300x200/d8f3dc/2d6a4f?text=CaféBook'"/>
         <p id="drinkModalDesc" class="text-muted small mb-3"></p>
         <div class="d-flex align-items-center justify-content-center gap-3 mb-3">
           <span class="fs-4 fw-bold cb-text-green" id="drinkModalPrice"></span>
@@ -445,18 +503,14 @@
         </div>
       </div>
       <div class="modal-footer border-0 flex-column gap-2">
-        <button class="btn cb-btn-primary w-100 py-2" onclick="addToCartFromModal()">
-          <i class="bi bi-bag-plus me-2"></i>Thêm vào giỏ hàng
-        </button>
-        <button class="btn cb-btn-outline w-100 py-2" onclick="addToOrderFromModal()" data-bs-dismiss="modal">
-          <i class="bi bi-lightning me-2"></i>Đặt ngay
-        </button>
+        <button class="btn cb-btn-primary w-100 py-2" onclick="addToCartFromModal()"><i class="bi bi-bag-plus me-2"></i>Thêm vào giỏ hàng</button>
+        <button class="btn cb-btn-outline-gray w-100 py-2" onclick="addToOrderFromModal()" data-bs-dismiss="modal"><i class="bi bi-lightning me-2"></i>Đặt ngay</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ORDER SUCCESS MODAL -->
+<!-- ======== ORDER SUCCESS MODAL ======== -->
 <div class="modal fade" id="orderSuccessModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content cb-modal text-center">
@@ -465,13 +519,21 @@
         <h4 class="fw-bold mb-2" id="orderSuccessTitle">Đặt hàng thành công!</h4>
         <p class="text-muted" id="orderSuccessMsg"></p>
         <div class="cb-booking-ref p-3 mb-4 text-start" id="orderRef"></div>
+        <!-- QR xác nhận nếu thanh toán QR -->
+        <div id="orderQrConfirm" class="d-none mb-3">
+          <div class="cb-qr-inner text-center border rounded p-3">
+            <p class="small fw-600 cb-text-green mb-2"><i class="bi bi-qr-code me-1"></i>Thanh toán QR</p>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=cafebook-confirm&color=1a3d2f" class="cb-qr-img" alt="QR"/>
+            <p class="small text-muted mt-2 mb-0">Số tiền: <strong id="orderQrAmt" class="cb-text-green"></strong></p>
+          </div>
+        </div>
         <button class="btn cb-btn-primary px-4" data-bs-dismiss="modal">Đóng</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- BOOKING SUCCESS MODAL -->
+<!-- ======== BOOKING SUCCESS MODAL ======== -->
 <div class="modal fade" id="bookingSuccessModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content cb-modal text-center">
@@ -486,61 +548,72 @@
   </div>
 </div>
 
-<!-- TOAST -->
+<!-- Bootstrap: Toast -->
 <div class="position-fixed bottom-0 end-0 p-3" style="z-index:9999">
   <div id="cbToast" class="toast cb-toast" role="alert">
     <div class="toast-body" id="cbToastMsg"></div>
   </div>
 </div>
 
-<!-- FOOTER -->
+<!-- ======== FOOTER ======== -->
 <footer class="cb-footer py-4 mt-5">
   <div class="container">
     <div class="row g-4">
       <div class="col-md-4">
         <h6 class="fw-bold mb-3"><i class="bi bi-cup-hot-fill me-2 cb-text-green"></i>CaféBook</h6>
-        <p class="text-muted small">Không gian cà phê & sách yên tĩnh, nơi bạn có thể thư giãn và tìm thấy cảm hứng.</p>
+        <p class="text-muted small mb-2">Không gian cà phê & sách yên tĩnh, nơi thư giãn và tìm cảm hứng.</p>
+        <div class="d-flex gap-2 mt-3">
+          <a href="#" class="cb-social-btn"><i class="bi bi-facebook"></i></a>
+          <a href="#" class="cb-social-btn"><i class="bi bi-instagram"></i></a>
+          <a href="#" class="cb-social-btn"><i class="bi bi-tiktok"></i></a>
+        </div>
       </div>
       <div class="col-md-4">
         <h6 class="fw-bold mb-3">Giờ mở cửa</h6>
         <p class="text-muted small mb-1"><i class="bi bi-clock me-2"></i>Thứ 2 – Thứ 6: 07:00 – 22:00</p>
-        <p class="text-muted small"><i class="bi bi-clock me-2"></i>Thứ 7 – CN: 07:00 – 23:00</p>
+        <p class="text-muted small mb-1"><i class="bi bi-clock me-2"></i>Thứ 7 – CN: 07:00 – 23:00</p>
+        <p class="text-muted small mt-2 mb-0"><i class="bi bi-wifi me-2"></i>Free WiFi | <i class="bi bi-outlet me-1"></i>Ổ cắm điện</p>
       </div>
       <div class="col-md-4">
         <h6 class="fw-bold mb-3">Liên hệ</h6>
         <p class="text-muted small mb-1"><i class="bi bi-geo-alt me-2"></i>123 Đường Sách, Q.1, TP.HCM</p>
         <p class="text-muted small mb-1"><i class="bi bi-telephone me-2"></i>0901 234 567</p>
-        <p class="text-muted small"><i class="bi bi-envelope me-2"></i>hello@cafebook.vn</p>
+        <p class="text-muted small mb-1"><i class="bi bi-envelope me-2"></i>hello@cafebook.vn</p>
+        <a href="admin.html" class="small text-muted mt-2 d-block"><i class="bi bi-shield-lock me-1"></i>Admin Portal</a>
       </div>
     </div>
-    <hr class="mt-4 mb-3" />
-    <p class="text-center text-muted small mb-0">&copy; 2026 CaféBook. Made with <i class="bi bi-heart-fill text-danger"></i> Group 5 — FIT-DNU</p>
+    <hr class="mt-4 mb-3"/>
+    <p class="text-center text-muted small mb-0">
+      &copy; 2025 CaféBook &mdash; K19-01 Nhóm 5 &nbsp;|&nbsp;
+      Lê Đức Anh &nbsp;|&nbsp; Trần Trường Thành
+    </p>
   </div>
 </footer>
 
+<!-- Back to top -->
+<button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Lên đầu trang">
+  <i class="bi bi-arrow-up"></i>
+</button>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-<!-- Back to top -->
-<button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Lên đầu trang"><i class="bi bi-arrow-up"></i></button>
 <script src="utils.js"></script>
 <script src="api.js"></script>
 <script src="main.js"></script>
 <script>
-// Back to top
-window.addEventListener("scroll",function(){
-  document.getElementById("backToTop").classList.toggle("show",window.scrollY>300);
-  // Nav scroll-spy
-  var sections=["menu-section","order-section","tables-section","notifications-section"];
-  sections.forEach(function(id){
-    var el=document.getElementById(id);
-    if(!el)return;
-    var rect=el.getBoundingClientRect();
-    var link=document.querySelector('.cb-nav-link[href="#'+id+'"]');
-    if(link){
-      if(rect.top<=80&&rect.bottom>80)link.classList.add("active");
-      else link.classList.remove("active");
-    }
-  });
+// Back to top + scroll-spy (YC1: DOM event)
+window.addEventListener('scroll', function() {
+  var btn = document.getElementById('backToTop');
+  if (btn) btn.classList.toggle('show', window.scrollY > 300);
+  // Scroll-spy navbar
+  var sections = ['menu-section','order-section','tables-section','notifications-section'];
+  for (var i = 0; i < sections.length; i++) {
+    var el = document.getElementById(sections[i]);
+    if (!el) continue;
+    var rect = el.getBoundingClientRect();
+    var link = document.querySelector('.cb-nav-link[href="#' + sections[i] + '"]');
+    if (link) link.classList.toggle('active', rect.top <= 80 && rect.bottom > 80);
+  }
 });
 </script>
 </body>
