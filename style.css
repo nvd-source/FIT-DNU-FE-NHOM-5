@@ -662,15 +662,139 @@ a { text-decoration:none; }
 .cb-notify-info{background:var(--blue-light);border-color:var(--blue-main)}
 
 /* ══════════════════════════════════════════════════════════
+   FILTER SM (order section mini filter)
+══════════════════════════════════════════════════════════ */
+.cb-filter-sm{
+  font-size:.77rem!important;
+  padding:.3rem .75rem!important;
+}
+
+/* ══════════════════════════════════════════════════════════
+   PAYMENT METHODS
+══════════════════════════════════════════════════════════ */
+.cb-payment-methods{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+}
+.cb-payment-option{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 14px;border-radius:var(--radius-sm);
+  border:2px solid var(--border);background:#fff;
+  cursor:pointer;transition:var(--transition);
+  position:relative;user-select:none;
+}
+.cb-payment-option input[type="radio"]{display:none}
+.cb-payment-option:hover{border-color:var(--green-light);background:var(--green-xpale)}
+.cb-payment-option.cb-pay-active{
+  border-color:var(--green-main);background:var(--green-xpale);
+  box-shadow:0 0 0 3px rgba(45,106,79,.1);
+}
+.cb-pay-icon{
+  width:36px;height:36px;border-radius:var(--radius-xs);
+  background:var(--cream);display:flex;align-items:center;justify-content:center;
+  font-size:1.15rem;color:var(--text-mid);flex-shrink:0;
+  transition:var(--transition);
+}
+.cb-pay-active .cb-pay-icon{background:var(--green-pale);color:var(--green-main)}
+.cb-pay-qr-icon{background:var(--amber-light)!important;color:var(--amber)!important}
+.cb-pay-active .cb-pay-qr-icon{background:var(--green-pale)!important;color:var(--green-main)!important}
+.cb-pay-label{flex:1;font-size:.875rem;font-weight:500;color:var(--text-dark)}
+.cb-pay-check{
+  font-size:1rem;color:var(--green-main);
+  opacity:0;transition:opacity .2s;
+  position:absolute;right:10px;
+}
+.cb-pay-active .cb-pay-check{opacity:1}
+
+/* ══════════════════════════════════════════════════════════
+   QR PAYMENT BOX
+══════════════════════════════════════════════════════════ */
+.cb-qr-box{
+  border-radius:var(--radius-sm);
+  overflow:hidden;
+  border:1.5px solid var(--green-light);
+  background:linear-gradient(145deg,var(--green-xpale) 0%,#fff 100%);
+  animation:fadeSlideIn .3s ease;
+}
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.cb-qr-inner{padding:16px}
+.cb-qr-img-wrap{
+  display:inline-block;position:relative;
+  border-radius:var(--radius-sm);overflow:hidden;
+  box-shadow:0 4px 16px rgba(26,61,47,.15);
+  border:3px solid #fff;
+}
+.cb-qr-img{
+  width:170px;height:170px;object-fit:contain;display:block;
+  background:#fff;
+}
+.cb-qr-bank-info{
+  background:rgba(255,255,255,.8);border-radius:var(--radius-xs);
+  padding:8px 12px;border:1px solid var(--border);
+}
+.cb-qr-bank-info p{color:var(--text-mid)!important;font-size:.8rem}
+.cb-qr-bank-info strong{color:var(--green-dark)}
+
+/* ══════════════════════════════════════════════════════════
+   LOGIN MODAL TABS IMPROVEMENT
+══════════════════════════════════════════════════════════ */
+.cb-tab-toggle{
+  display:flex;background:var(--cream);
+  border-radius:var(--radius-sm);padding:4px;gap:4px;
+  border:1px solid var(--border);
+}
+.cb-tab-btn{
+  flex:1;border:none;background:transparent;
+  border-radius:6px;padding:9px;font-size:.875rem;
+  font-weight:500;color:var(--text-mid);cursor:pointer;
+  transition:var(--transition);display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.cb-tab-btn.active{background:#fff;color:var(--green-main);box-shadow:var(--shadow-sm);font-weight:600}
+.cb-tab-btn#tabAdmin.active{color:var(--coral)}
+/* Guest hint box */
+.cb-login-hint{
+  border-radius:var(--radius-sm);padding:10px 14px;
+  font-size:.82rem;margin-bottom:4px;
+  display:flex;align-items:center;gap:8px;
+}
+.cb-login-hint-guest{background:var(--green-pale);color:var(--green-dark);border:1px solid var(--green-light)}
+.cb-login-hint-admin{background:#fff3cd;color:#664d03;border:1px solid #ffc107}
+/* Demo hint below form */
+.cb-demo-hint{
+  background:var(--cream);border-radius:var(--radius-sm);
+  border:1px dashed var(--border);font-size:.8rem;
+}
+
+/* ══════════════════════════════════════════════════════════
    FOOTER
 ══════════════════════════════════════════════════════════ */
 .cb-footer{
   background:var(--green-dark);
-  color:rgba(255,255,255,.68);
-  border-top:1px solid rgba(255,255,255,.06);
+  color:rgba(255,255,255,.80);
+  border-top:1px solid rgba(255,255,255,.08);
 }
-.cb-footer h6{color:rgba(255,255,255,.95)}
-.cb-footer hr{border-color:rgba(255,255,255,.08)}
+.cb-footer h6{color:#fff!important;font-size:.92rem;letter-spacing:.3px}
+.cb-footer hr{border-color:rgba(255,255,255,.12)}
+/* Override Bootstrap text-muted inside footer */
+.cb-footer .text-muted,
+.cb-footer p.text-muted,
+.cb-footer small.text-muted,
+.cb-footer a.text-muted,
+.cb-footer p,
+.cb-footer small,
+.cb-footer i{color:rgba(255,255,255,.72)!important}
+.cb-footer a.text-muted:hover,.cb-footer a:hover{color:#fff!important;text-decoration:none}
+.cb-footer .text-center.text-muted{color:rgba(255,255,255,.55)!important}
+/* Social buttons */
+.cb-social-btn{
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.18);
+  color:rgba(255,255,255,.8)!important;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:.95rem;transition:var(--transition);
+  text-decoration:none!important;
+}
+.cb-social-btn:hover{background:rgba(255,255,255,.22);color:#fff!important;border-color:rgba(255,255,255,.4);transform:translateY(-2px)}
 
 /* ══════════════════════════════════════════════════════════
    ADMIN — COMMON

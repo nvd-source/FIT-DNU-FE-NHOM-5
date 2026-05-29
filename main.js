@@ -113,10 +113,21 @@ function openLoginModal() { new bootstrap.Modal(document.getElementById('loginMo
 var loginRole = 'guest';
 function switchLoginTab(role) {
   loginRole = role;
-  // YC4: jQuery .attr()
+  // YC4: jQuery .attr(), .toggleClass()
   $('#loginUsername').attr('placeholder', role === 'admin' ? 'admin' : 'guest');
+  $('#loginPassword').attr('placeholder', role === 'admin' ? 'admin123' : 'guest123');
   $('#tabGuest').toggleClass('active', role === 'guest');
   $('#tabAdmin').toggleClass('active', role === 'admin');
+
+  // Hiển thị hint tương ứng (YC4: .toggleClass)
+  $('#guestLoginHint').toggleClass('d-none', role !== 'guest');
+  $('#adminLoginHint').toggleClass('d-none', role !== 'admin');
+
+  // Cập nhật label nút
+  $('#loginBtnLabel').text(role === 'admin' ? 'Đăng nhập Admin' : 'Đăng nhập');
+
+  // Xóa form và lỗi
+  $('#loginUsername, #loginPassword').val('');
   clearAllErrors(['loginUsername', 'loginPassword']);
   $('#loginError').addClass('d-none');
 }
@@ -138,8 +149,18 @@ function handleLogin(e) {
   setTimeout(function() {
     $('#loginBtnText').show(); $('#loginBtnSpinner').hide();
     var user = AUTH.login(u, p);
-    if (!user) { $('#loginError').text('Sai thông tin đăng nhập').removeClass('d-none'); return; }
-    if (loginRole === 'admin' && user.role !== 'admin') { $('#loginError').text('Tài khoản không có quyền admin').removeClass('d-none'); return; }
+    if (!user) { $('#loginError').text('Sai tên đăng nhập hoặc mật khẩu').removeClass('d-none'); return; }
+
+    // FIX: Kiểm tra cross-role — admin tab chỉ cho admin, guest tab chỉ cho guest
+    if (loginRole === 'admin' && user.role !== 'admin') {
+      $('#loginError').text('Tài khoản này không có quyền quản trị').removeClass('d-none');
+      return;
+    }
+    if (loginRole === 'guest' && user.role === 'admin') {
+      $('#loginError').text('Đây là tài khoản admin — vui lòng chuyển sang tab "Quản trị viên"').removeClass('d-none');
+      return;
+    }
+
     AUTH.save(user); currentUser = user;
     bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
     updateNavUser();
@@ -254,13 +275,20 @@ function setOrderType(type, btn) {
   if (type === 'dine-in') {
     $('#dineInFields').slideDown(200); // YC4: slideDown
     $('#deliveryFields').slideUp(200);
-    $('#addressField').addClass('d-none');
+    // FIX: dùng slideUp thay vì addClass('d-none') để tránh lần sau slideDown bị chặn bởi !important
+    $('#addressField').slideUp(200);
   } else {
     $('#dineInFields').slideUp(200);
-    $('#deliveryFields').slideDown(200);
-    if (type === 'online') $('#addressField').slideDown(200);
-    else $('#addressField').slideUp(200);
+    // FIX: phải removeClass('d-none') trước slideDown vì Bootstrap d-none có display:none !important
+    $('#deliveryFields').removeClass('d-none').slideDown(200);
+    if (type === 'online') {
+      $('#addressField').removeClass('d-none').slideDown(200);
+    } else {
+      $('#addressField').slideUp(200);
+    }
   }
+  // Cập nhật QR nếu đang chọn QR
+  if (payMethod === 'qr') updateQrAmount();
 }
 
 // ===== PAYMENT METHOD =====

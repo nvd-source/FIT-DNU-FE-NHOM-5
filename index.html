@@ -262,13 +262,18 @@
           <!-- QR hiển thị khi chọn QR -->
           <div id="qrPaymentBox" class="cb-qr-box d-none mb-3">
             <div class="cb-qr-inner text-center">
-              <p class="small fw-600 mb-2 cb-text-green"><i class="bi bi-qr-code me-1"></i>Quét mã để thanh toán</p>
+              <p class="small fw-bold mb-2 cb-text-green"><i class="bi bi-qr-code me-1"></i>Quét mã để chuyển khoản</p>
               <div class="cb-qr-img-wrap">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=cafebook-payment-demo&color=1a3d2f" alt="QR Code" class="cb-qr-img"/>
+                <img src="qr-cafebook.png" alt="QR Chuyển khoản CaféBook" class="cb-qr-img"
+                     onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=170x170&data=CafeBook-Payment&color=1a3d2f'"/>
               </div>
-              <p class="small text-muted mt-2 mb-1">Ngân hàng: <strong>VietQR</strong></p>
-              <p class="small text-muted mb-0">STK: <strong>9999 0000 1234</strong></p>
-              <p class="small text-muted mb-0">CaféBook — <span id="qrAmount" class="cb-text-green fw-bold">0đ</span></p>
+              <div class="cb-qr-bank-info mt-2">
+                <p class="mb-1"><i class="bi bi-bank2 me-1"></i>Ngân hàng: <strong>VietQR / MB Bank</strong></p>
+                <p class="mb-1"><i class="bi bi-credit-card me-1"></i>STK: <strong>9999 0000 1234</strong></p>
+                <p class="mb-0"><i class="bi bi-person me-1"></i>Chủ TK: <strong>CAFEBOOK VN</strong></p>
+                <p class="mb-0 mt-1"><i class="bi bi-cash me-1"></i>Số tiền: <strong id="qrAmount" class="cb-text-green">0đ</strong></p>
+                <p class="mb-0 mt-1 opacity-75" style="font-size:.75rem"><i class="bi bi-info-circle me-1"></i>Nội dung CK: <em>Tên + SĐT</em></p>
+              </div>
             </div>
           </div>
 
@@ -445,16 +450,33 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <div class="cb-tab-toggle mb-4">
-          <button class="cb-tab-btn active" id="tabGuest" onclick="switchLoginTab('guest')"><i class="bi bi-person me-1"></i>Khách hàng</button>
-          <button class="cb-tab-btn" id="tabAdmin" onclick="switchLoginTab('admin')"><i class="bi bi-shield-lock me-1"></i>Quản trị viên</button>
+        <!-- Tab switcher -->
+        <div class="cb-tab-toggle mb-3">
+          <button class="cb-tab-btn active" id="tabGuest" onclick="switchLoginTab('guest')">
+            <i class="bi bi-person-circle"></i>Khách hàng
+          </button>
+          <button class="cb-tab-btn" id="tabAdmin" onclick="switchLoginTab('admin')">
+            <i class="bi bi-shield-lock-fill"></i>Quản trị viên
+          </button>
         </div>
+
+        <!-- Guest hint -->
+        <div id="guestLoginHint" class="cb-login-hint cb-login-hint-guest mb-3">
+          <i class="bi bi-info-circle-fill fs-5"></i>
+          <div><strong>Demo khách hàng:</strong> <code>guest</code> / <code>guest123</code></div>
+        </div>
+        <!-- Admin hint -->
+        <div id="adminLoginHint" class="cb-login-hint cb-login-hint-admin mb-3 d-none">
+          <i class="bi bi-shield-exclamation fs-5"></i>
+          <div><strong>Khu vực quản trị</strong> — Chỉ dành cho nhân viên CaféBook</div>
+        </div>
+
         <form id="loginForm" novalidate>
           <div class="mb-3">
             <label class="form-label cb-label">Tên đăng nhập</label>
             <div class="input-group">
-              <span class="input-group-text cb-ig-text"><i class="bi bi-person"></i></span>
-              <input type="text" class="form-control cb-input" id="loginUsername" placeholder="guest"/>
+              <span class="input-group-text cb-ig-text"><i class="bi bi-person" id="loginUserIcon"></i></span>
+              <input type="text" class="form-control cb-input" id="loginUsername" placeholder="guest" autocomplete="username"/>
             </div>
             <div class="cb-error-msg" id="err-loginUsername"></div>
           </div>
@@ -462,20 +484,17 @@
             <label class="form-label cb-label">Mật khẩu</label>
             <div class="input-group">
               <span class="input-group-text cb-ig-text"><i class="bi bi-lock"></i></span>
-              <input type="password" class="form-control cb-input" id="loginPassword" placeholder="••••••••"/>
+              <input type="password" class="form-control cb-input" id="loginPassword" placeholder="••••••••" autocomplete="current-password"/>
               <button class="btn cb-ig-text" type="button" onclick="togglePwd()"><i class="bi bi-eye" id="eyeIcon"></i></button>
             </div>
             <div class="cb-error-msg" id="err-loginPassword"></div>
           </div>
           <div id="loginError" class="alert alert-danger py-2 d-none small"></div>
           <button type="submit" class="btn cb-btn-primary w-100 py-2 mt-1">
-            <span id="loginBtnText"><i class="bi bi-box-arrow-in-right me-1"></i>Đăng nhập</span>
+            <span id="loginBtnText"><i class="bi bi-box-arrow-in-right me-1"></i><span id="loginBtnLabel">Đăng nhập</span></span>
             <span id="loginBtnSpinner" class="d-none"><div class="cb-spinner-sm d-inline-block me-2"></div>Đang xử lý...</span>
           </button>
         </form>
-        <div class="text-center mt-3 p-2 cb-demo-hint">
-          <small class="text-muted">Demo: <b>guest</b>/guest123 &nbsp;|&nbsp; <b>admin</b>/admin123</small>
-        </div>
       </div>
     </div>
   </div>
@@ -521,10 +540,18 @@
         <div class="cb-booking-ref p-3 mb-4 text-start" id="orderRef"></div>
         <!-- QR xác nhận nếu thanh toán QR -->
         <div id="orderQrConfirm" class="d-none mb-3">
-          <div class="cb-qr-inner text-center border rounded p-3">
-            <p class="small fw-600 cb-text-green mb-2"><i class="bi bi-qr-code me-1"></i>Thanh toán QR</p>
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=cafebook-confirm&color=1a3d2f" class="cb-qr-img" alt="QR"/>
-            <p class="small text-muted mt-2 mb-0">Số tiền: <strong id="orderQrAmt" class="cb-text-green"></strong></p>
+          <div class="cb-qr-box">
+            <div class="cb-qr-inner text-center">
+              <p class="small fw-bold cb-text-green mb-2"><i class="bi bi-qr-code me-1"></i>Thanh toán chuyển khoản</p>
+              <div class="cb-qr-img-wrap">
+                <img src="qr-cafebook.png" class="cb-qr-img" alt="QR Thanh toán"
+                     onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=cafebook-payment&color=1a3d2f'"/>
+              </div>
+              <div class="cb-qr-bank-info mt-2">
+                <p class="mb-0 small">STK: <strong>9999 0000 1234</strong> — MB Bank</p>
+                <p class="mb-0 small mt-1">Số tiền: <strong id="orderQrAmt" class="cb-text-green"></strong></p>
+              </div>
+            </div>
           </div>
         </div>
         <button class="btn cb-btn-primary px-4" data-bs-dismiss="modal">Đóng</button>
