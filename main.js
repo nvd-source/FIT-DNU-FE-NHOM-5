@@ -302,9 +302,15 @@ function selectPayMethod(method) {
 }
 
 function updateQrAmount() {
-  var totals = calcCartTotals(orderCart);
+  var totals = calcFinalTotals(orderCart);
   var el = document.getElementById('qrAmount');
   if (el) el.textContent = formatPrice(totals.total);
+  // Update transfer note
+  var noteEl = document.getElementById('qrTransferNote');
+  if (noteEl) {
+    var user = AUTH.get();
+    noteEl.textContent = 'CAFEBOOK ' + (user ? user.name : '[Tên]') + ' ' + formatPrice(totals.total);
+  }
 }
 
 // ===== ORDER CART =====
@@ -408,8 +414,10 @@ function placeOrder() {
     payload.guestName = name; payload.phone = phone;
   }
 
-  var totals = calcCartTotals(orderCart);
-  payload.subtotal = totals.subtotal; payload.tax = totals.tax; payload.total = totals.total;
+  var totals = calcFinalTotals(orderCart);
+  payload.subtotal = totals.subtotal; payload.tax = totals.tax;
+  payload.discount = totals.discount; payload.total = totals.total;
+  if (appliedCoupon) payload.couponCode = appliedCoupon.code;
 
   // Loading state (YC2)
   $('#placeOrderText').hide(); $('#placeOrderSpinner').show();
@@ -438,6 +446,7 @@ function placeOrder() {
       new bootstrap.Modal(document.getElementById('orderSuccessModal')).show();
       NOTIF.add({ type:'order', title:'Đặt hàng thành công! (#'+(result.id||'')+')', message: orderCart.length + ' món · ' + typeLabel + ' · ' + payLabel + ' · ' + formatPrice(payload.total), icon:'bi-bag-check' });
       ANALYTICS.addOrder(payload.items);
+      if (appliedCoupon) { COUPONS.markUsed(appliedCoupon.code); appliedCoupon=null; removeCoupon(); }
       updateNotifBadge(); loadUserNotifications();
       orderCart = []; renderReceipt();
       document.getElementById('orderNote').value = '';
@@ -501,7 +510,7 @@ function updateCartUI() {
 
   var totals = calcCartTotals(cart); // dùng hàm utils.js
   var se = document.getElementById('cartSubtotal'); if(se) se.textContent = formatPrice(totals.subtotal);
-  var te = document.getElementById('cartTaxAmt');   if(te) te.textContent = formatPrice(totals.tax);
+  var te = document.getElementById('cartTaxAmt');   if(te) te.textContent = formatPrice(totals.tax); // tax 2%
   var ge = document.getElementById('cartTotal');    if(ge) ge.textContent = formatPrice(totals.total);
   var fe = document.getElementById('cartFooter');   if(fe) fe.style.display = cart.length ? '' : 'none';
 
@@ -732,4 +741,163 @@ function loadUserNotifications() {
   }
   // YC4: jQuery .html() + .slideDown()
   $(container).html(html).hide().slideDown(250);
+}
+// ============================================================
+// AUTH – Đăng nhập / Đăng ký nâng cấp
+// ============================================================
+var loginRole = 'guest';
+var authMode  = 'login'; // 'login' | 'register'
+
+function openLoginModal() { new bootstrap.Modal(document.getElementById('loginModal')).show(); }
+
+function showAuthMode(mode) {
+  authMode = mode;
+  if (mode === 'login') {
+    $('#loginFormWrap').show();    $('#registerFormWrap').addClass('d-none');
+    $('#switchLogin').addClass('active');   $('#switchRegister').removeClass('active');
+  } else {
+    $('#loginFormWrap').hide();    $('#registerFormWrap').removeClass('d-none');
+    $('#switchLogin').removeClass('active'); $('#switchRegister').addClass('active');
+    clearAllErrors(['regName','regEmail','regUsername','regPassword','regPasswordConfirm']);
+    $('#registerError').addClass('d-none'); $('#registerSuccess').addClass('d-none');
+  }
+}
+
+function switchLoginTab(role) {
+  loginRole = role;
+  if (role === 'admin') {
+    $('#guestLoginHint').addClass('d-none');  $('#adminLoginHint').removeClass('d-none');
+    $('#guestAuthTabs').fadeOut(200);          $('#adminDemoHint').removeClass('d-none');
+    $('#loginUsername').attr('placeholder','admin');
+    $('#loginBtnLabel').text('Đăng nhập Admin');
+    if (authMode !== 'login') showAuthMode('login');
+  } else {
+    $('#guestLoginHint').removeClass('d-none'); $('#adminLoginHint').addClass('d-none');
+    $('#guestAuthTabs').fadeIn(200);            $('#adminDemoHint').addClass('d-none');
+    $('#loginUsername').attr('placeholder','email@example.com hoặc mã SV');
+    $('#loginBtnLabel').text('Đăng nhập');
+  }
+  $('#tabGuest').toggleClass('active', role==='guest');
+  $('#tabAdmin').toggleClass('active', role==='admin');
+  clearAllErrors(['loginUsername','loginPassword']);
+  $('#loginError').addClass('d-none');
+}
+
+// Override handleLogin to use USERS store
+document.addEventListener('DOMContentLoaded', function() {
+  var lf = document.getElementById('loginForm');
+  if (lf) lf.addEventListener('submit', handleLoginNew);
+  var rf = document.getElementById('registerForm');
+  if (rf) rf.addEventListener('submit', handleRegister);
+});
+
+function handleLoginNew(e) {
+  e.preventDefault();
+  var u = document.getElementById('loginUsername').value.trim();
+  var p = document.getElementById('loginPassword').value;
+  clearAllErrors(['loginUsername','loginPassword']);
+  $('#loginError').addClass('d-none');
+  if (!u) { showError('loginUsername','Vui lòng nhập tên đăng nhập / email'); return; }
+  if (!p) { showError('loginPassword','Vui lòng nhập mật khẩu'); return; }
+
+  $('#loginBtnText').hide(); $('#loginBtnSpinner').show();
+  setTimeout(function() {
+    $('#loginBtnText').show(); $('#loginBtnSpinner').hide();
+    var user = USERS.login(u, p);
+    if (!user) { $('#loginError').text('Sai thông tin đăng nhập').removeClass('d-none'); return; }
+    if (loginRole === 'admin' && user.role !== 'admin') { $('#loginError').text('Tài khoản không có quyền admin').removeClass('d-none'); return; }
+    AUTH.save(user);
+    currentUser = user;
+    bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
+    updateNavUser();
+    if (user.role === 'admin') window.location.href = 'admin.html';
+    else { showToast('Chào mừng, ' + user.name + '! ☕', 'success'); loadUserNotifications(); }
+  }, 600);
+}
+
+function handleRegister(e) {
+  e.preventDefault();
+  clearAllErrors(['regName','regEmail','regUsername','regPassword','regPasswordConfirm']);
+  $('#registerError').addClass('d-none');
+  var name    = document.getElementById('regName').value.trim();
+  var email   = document.getElementById('regEmail').value.trim();
+  var username= document.getElementById('regUsername').value.trim();
+  var std     = document.getElementById('regStd').value.trim();
+  var pwd     = document.getElementById('regPassword').value;
+  var pwd2    = document.getElementById('regPasswordConfirm').value;
+  var valid = true;
+  if (!name||name.length<2) { showError('regName','Họ tên phải có ít nhất 2 ký tự'); valid=false; }
+  if (!email||!isValidEmail(email)) { showError('regEmail','Email không hợp lệ'); valid=false; }
+  if (!username||username.length<3) { showError('regUsername','Tên đăng nhập ít nhất 3 ký tự'); valid=false; }
+  if (!pwd||pwd.length<6) { showError('regPassword','Mật khẩu ít nhất 6 ký tự'); valid=false; }
+  if (pwd !== pwd2) { showError('regPasswordConfirm','Mật khẩu xác nhận không khớp'); valid=false; }
+  if (!valid) return;
+
+  $('#registerBtnText').hide(); $('#registerBtnSpinner').show();
+  setTimeout(function() {
+    $('#registerBtnText').show(); $('#registerBtnSpinner').hide();
+    var result = USERS.register({ name:name, email:email, username:username, std:std, password:pwd });
+    if (!result.ok) { $('#registerError').text(result.msg).removeClass('d-none'); return; }
+    $('#registerSuccess').text('Đăng ký thành công! Bạn có thể đăng nhập ngay.').removeClass('d-none');
+    document.getElementById('registerForm').reset();
+    setTimeout(function() { showAuthMode('login'); }, 1500);
+    showToast('Đăng ký thành công! Chào mừng ' + name, 'success');
+  }, 700);
+}
+
+function toggleRegPwd() {
+  var inp = document.getElementById('regPassword');
+  var ic  = document.getElementById('regEyeIcon');
+  if (!inp) return;
+  inp.type = inp.type==='password'?'text':'password';
+  if (ic) { ic.classList.toggle('bi-eye'); ic.classList.toggle('bi-eye-slash'); }
+}
+
+// ============================================================
+// COUPON – Áp dụng mã giảm giá ở trang đặt món
+// ============================================================
+var appliedCoupon = null;
+
+function applyCoupon() {
+  var code = (document.getElementById('couponInput').value||'').toUpperCase().trim();
+  document.getElementById('err-coupon').textContent = '';
+  $('#couponSuccess').addClass('d-none');
+  if (!code) { document.getElementById('err-coupon').textContent = 'Vui lòng nhập mã giảm giá'; return; }
+  var totals = calcCartTotals(orderCart);
+  var result = COUPONS.validate(code, totals.subtotal);
+  if (!result.ok) {
+    document.getElementById('err-coupon').textContent = result.msg;
+    appliedCoupon = null;
+    renderReceipt();
+    return;
+  }
+  appliedCoupon = { code: code, coupon: result.coupon, discountAmt: result.discountAmt };
+  var label = result.coupon.type==='percent' ? result.coupon.discount+'%' : formatPrice(result.coupon.discount);
+  $('#couponSuccess').text('✓ Giảm ' + label + ' — tiết kiệm ' + formatPrice(result.discountAmt)).removeClass('d-none');
+  $('#removeCouponBtn').removeClass('d-none');
+  document.getElementById('couponInput').disabled = true;
+  renderReceipt();
+  showToast('Áp dụng mã ' + code + ' thành công!', 'success');
+}
+
+function removeCoupon() {
+  appliedCoupon = null;
+  document.getElementById('couponInput').value = '';
+  document.getElementById('couponInput').disabled = false;
+  document.getElementById('err-coupon').textContent = '';
+  $('#couponSuccess').addClass('d-none');
+  $('#removeCouponBtn').addClass('d-none');
+  renderReceipt();
+  showToast('Đã xóa mã giảm giá', 'warning');
+}
+
+// ============================================================
+// Override calcFinalTotal – tính có coupon
+// ============================================================
+function calcFinalTotals(cartArr) {
+  var totals = calcCartTotals(cartArr); // utils.js – subtotal, tax(2%), total
+  var discount = 0;
+  if (appliedCoupon) discount = appliedCoupon.discountAmt;
+  var grandTotal = Math.max(0, totals.total - discount);
+  return { subtotal: totals.subtotal, tax: totals.tax, discount: discount, total: grandTotal };
 }

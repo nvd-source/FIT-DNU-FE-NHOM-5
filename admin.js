@@ -68,6 +68,7 @@ function showPage(page){
   if(page==='tables')loadAdminTables();
   if(page==='reservations')loadAdminReservations();
   if(page==='analytics')loadAnalytics();
+  if(page==='coupons')loadCoupons();
   if(pg){pg.style.opacity=0;setTimeout(()=>{pg.style.transition='opacity .2s';pg.style.opacity=1;},10);}
 }
 
@@ -606,4 +607,91 @@ function handleNotifySubmit(e){
 
 function clearNotifyHistory(){
   document.getElementById('notifyHistory').innerHTML='<p class="text-muted small text-center py-3">Chưa có thông báo nào được gửi.</p>';
+}
+// ============================================================
+// COUPON MANAGEMENT – Admin
+// ============================================================
+function loadCoupons() {
+  var list = COUPONS.getAll();
+  var total    = list.length;
+  var active   = list.filter(function(c){ return c.active; }).length;
+  var used     = list.reduce(function(s,c){ return s+(c.used||0); }, 0);
+  var inactive = total - active;
+  // Stats (YC1: DOM)
+  var el;
+  el = document.getElementById('cpn-total');    if(el) el.textContent = total;
+  el = document.getElementById('cpn-active');   if(el) el.textContent = active;
+  el = document.getElementById('cpn-used');     if(el) el.textContent = used;
+  el = document.getElementById('cpn-inactive'); if(el) el.textContent = inactive;
+  renderCouponTable(list);
+}
+
+function renderCouponTable(list) {
+  var tbody = document.getElementById('couponTableBody');
+  if (!tbody) return;
+  if (!list || !list.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">Chưa có mã giảm giá nào.</td></tr>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < list.length; i++) {  // YC1: for loop
+    var c = list[i];
+    var discLabel = c.type==='percent' ? c.discount+'%' : formatPrice(c.discount);
+    var minLabel  = c.minOrder ? formatPrice(c.minOrder) : 'Không giới hạn';
+    var useLabel  = (c.used||0) + ' / ' + (c.maxUse||'∞');
+    html += '<tr>'
+      + '<td><code class="cb-coupon-code">' + c.code + '</code></td>'
+      + '<td class="text-muted small">' + (c.desc||'—') + '</td>'
+      + '<td><span class="badge ' + (c.type==='percent'?'bg-info text-dark':'cb-badge-amber') + '">' + discLabel + '</span></td>'
+      + '<td class="small">' + minLabel + '</td>'
+      + '<td class="small">' + useLabel + '</td>'
+      + '<td class="small text-muted">' + (c.createdAt||'—') + '</td>'
+      + '<td><span class="cb-status ' + (c.active?'cb-status-confirmed':'cb-status-cancelled') + '">' + (c.active?'Hoạt động':'Đã tắt') + '</span></td>'
+      + '<td class="text-nowrap">'
+      + '<button class="btn btn-sm ' + (c.active?'btn-outline-warning':'btn-outline-success') + ' me-1" onclick="toggleCoupon(\'' + c.code + '\')" title="' + (c.active?'Tắt':'Bật') + '"><i class="bi bi-' + (c.active?'pause':'play') + '-fill"></i></button>'
+      + '<button class="btn btn-sm btn-outline-danger" onclick="deleteCoupon(\'' + c.code + '\')" title="Xoá"><i class="bi bi-trash3"></i></button>'
+      + '</td></tr>';
+  }
+  // YC4: jQuery .html()
+  $('#couponTableBody').html(html);
+}
+
+function openCouponModal() {
+  document.getElementById('couponForm').reset();
+  clearAllErrors(['cpnCode','cpnDiscount']);
+  new bootstrap.Modal(document.getElementById('couponModal')).show();
+}
+
+function saveCoupon() {
+  clearAllErrors(['cpnCode','cpnDiscount']);
+  var code     = (document.getElementById('cpnCode').value||'').toUpperCase().trim();
+  var discount = Number(document.getElementById('cpnDiscount').value);
+  var type     = document.getElementById('cpnType').value;
+  var desc     = document.getElementById('cpnDesc').value.trim();
+  var minOrder = Number(document.getElementById('cpnMinOrder').value)||0;
+  var maxUse   = Number(document.getElementById('cpnMaxUse').value)||0;
+  var active   = document.getElementById('cpnActive').checked;
+  var valid = true;
+  if (!code||code.length<2)  { showError('cpnCode','Mã phải có ít nhất 2 ký tự'); valid=false; }
+  if (!discount||discount<=0){ showError('cpnDiscount','Giá trị giảm phải lớn hơn 0'); valid=false; }
+  if (type==='percent'&&discount>100){ showError('cpnDiscount','Phần trăm không thể quá 100%'); valid=false; }
+  if (!valid) return;
+  var result = COUPONS.add({ code:code, discount:discount, type:type, desc:desc, minOrder:minOrder, maxUse:maxUse||null, active:active });
+  if (!result.ok) { showError('cpnCode', result.msg); return; }
+  bootstrap.Modal.getInstance(document.getElementById('couponModal')).hide();
+  showToast('Tạo mã ' + code + ' thành công!', 'success');
+  loadCoupons();
+}
+
+function toggleCoupon(code) {
+  var isActive = COUPONS.toggle(code);
+  showToast('Mã ' + code + (isActive?' đã bật':' đã tắt'), 'success');
+  loadCoupons();
+}
+
+function deleteCoupon(code) {
+  if (!confirm('Xoá mã "' + code + '"? Thao tác không thể hoàn tác.')) return;
+  COUPONS.remove(code);
+  showToast('Đã xoá mã ' + code, 'success');
+  loadCoupons();
 }

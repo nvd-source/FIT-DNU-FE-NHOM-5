@@ -986,3 +986,257 @@ a { text-decoration:none; }
 }
 #backToTop.show{opacity:1;pointer-events:all;transform:translateY(0)}
 #backToTop:hover{background:var(--green-dark);transform:translateY(-2px)}
+/* ============================================================
+   NEW STYLES – Auth Modal, Coupon, QR Complete, Animations
+   ============================================================ */
+
+/* ── AUTH MODAL ─────────────────────────────────────────── */
+.cb-auth-modal { border-radius: 20px !important; overflow: hidden; }
+.cb-auth-header {
+  background: linear-gradient(135deg, var(--green-dark) 0%, var(--green-mid) 100%);
+  padding: 28px 24px 20px;
+  text-align: center;
+  position: relative;
+}
+.cb-auth-close {
+  position: absolute !important;
+  top: 14px; right: 16px;
+}
+.cb-auth-logo {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.15);
+  border: 2px solid rgba(255,255,255,.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; color: var(--green-light);
+  margin: 0 auto 10px;
+  animation: float 4s ease-in-out infinite;
+}
+.cb-auth-title { color: #fff; font-family: 'Playfair Display', serif; font-size: 1.3rem; margin: 0; }
+.cb-auth-sub { color: rgba(255,255,255,.65); font-size: .8rem; margin: 4px 0 0; }
+
+/* Role tabs */
+.cb-auth-role-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+.cb-auth-role-btn {
+  flex: 1; border: none; background: transparent;
+  padding: 12px 8px; font-size: .85rem; font-weight: 500;
+  color: var(--text-mid); cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: var(--transition);
+}
+.cb-auth-role-btn:hover { color: var(--green-main); background: var(--green-xpale); }
+.cb-auth-role-btn.active {
+  color: var(--green-main); border-bottom-color: var(--green-main);
+  background: var(--green-xpale);
+}
+
+/* Switch tabs (Login/Register) */
+.cb-auth-switch-tabs {
+  display: flex;
+  margin: 12px 20px 0;
+  background: var(--cream);
+  border-radius: var(--radius-sm);
+  padding: 4px; gap: 4px;
+}
+.cb-auth-switch-btn {
+  flex: 1; border: none; background: transparent;
+  border-radius: 6px; padding: 7px;
+  font-size: .85rem; font-weight: 500; color: var(--text-mid);
+  cursor: pointer; transition: var(--transition);
+}
+.cb-auth-switch-btn.active { background: #fff; color: var(--green-main); box-shadow: var(--shadow-sm); }
+
+.cb-auth-body { padding: 16px 20px 20px; }
+.cb-auth-submit-btn {
+  background: linear-gradient(135deg, var(--green-main), var(--green-mid));
+  border: none; color: #fff; border-radius: 50px;
+  font-weight: 600; letter-spacing: .3px;
+  transition: var(--transition);
+}
+.cb-auth-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(45,106,79,.35); color: #fff; }
+.cb-demo-hint { background: var(--cream); border-radius: var(--radius-sm); }
+.cb-login-hint {
+  padding: 10px 14px; border-radius: var(--radius-sm); font-size: .82rem;
+}
+
+/* ── COUPON FIELD ────────────────────────────────────────── */
+.cb-coupon-wrap { position: relative; }
+.cb-btn-coupon {
+  background: var(--green-main); color: #fff; border: none;
+  font-size: .82rem; font-weight: 500; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: .38rem .9rem; transition: var(--transition);
+}
+.cb-btn-coupon:hover { background: var(--green-dark); color: #fff; }
+.cb-btn-coupon-remove {
+  background: var(--coral-light); color: var(--coral); border: none;
+  font-size: .82rem; padding: .38rem .7rem;
+  transition: var(--transition);
+}
+.cb-btn-coupon-remove:hover { background: var(--coral); color: #fff; }
+.cb-coupon-success {
+  background: var(--green-pale); color: var(--green-dark);
+  border-radius: var(--radius-xs); padding: 6px 10px;
+  font-size: .8rem; font-weight: 500; margin-top: 5px;
+}
+.cb-coupon-code {
+  background: var(--green-pale); color: var(--green-dark);
+  border-radius: 4px; padding: 2px 8px;
+  font-size: .85rem; font-weight: 700; letter-spacing: .5px;
+}
+
+/* ── QR PAYMENT COMPLETE ────────────────────────────────── */
+.cb-qr-box {
+  background: linear-gradient(135deg, #f0faf2 0%, #e8f5e9 100%);
+  border: 1.5px solid var(--green-light);
+  border-radius: var(--radius);
+  overflow: hidden;
+  animation: fadeSlideIn .3s ease;
+}
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.cb-qr-title {
+  font-weight: 700; font-size: .85rem;
+  color: var(--green-dark); letter-spacing: .3px;
+}
+.cb-qr-inner { padding: 14px 16px; }
+.cb-qr-layout {
+  display: flex; align-items: flex-start; gap: 14px;
+  margin-top: 10px;
+}
+.cb-qr-img-wrap {
+  position: relative; flex-shrink: 0;
+  width: 110px; height: 110px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 3px solid var(--green-main);
+  box-shadow: 0 4px 12px rgba(45,106,79,.2);
+}
+.cb-qr-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cb-qr-scan-line {
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: rgba(45,106,79,.7);
+  animation: scanLine 2s ease-in-out infinite;
+}
+@keyframes scanLine {
+  0%   { top: 0%; }
+  50%  { top: 95%; }
+  100% { top: 0%; }
+}
+.cb-qr-bank-info { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.cb-qr-bank-row {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: .78rem;
+}
+.cb-qr-bank-row > i {
+  color: var(--green-main); font-size: .9rem;
+  margin-top: 1px; flex-shrink: 0;
+}
+.cb-qr-bank-row > div { display: flex; flex-direction: column; }
+.cb-qr-lbl { color: var(--text-light); font-size: .72rem; }
+.cb-qr-val { color: var(--text-dark); font-weight: 500; font-size: .8rem; }
+.cb-qr-amount-row { background: rgba(45,106,79,.06); border-radius: 6px; padding: 4px 6px; }
+.cb-qr-note {
+  margin-top: 10px; font-size: .74rem; color: var(--text-mid);
+  background: rgba(45,106,79,.06); border-radius: 6px;
+  padding: 7px 10px;
+}
+
+/* QR Confirm box in success modal */
+.cb-qr-confirm-box {
+  background: var(--green-xpale);
+  border: 1.5px solid var(--green-light);
+  border-radius: var(--radius-sm); padding: 14px;
+}
+.cb-qr-confirm-img {
+  width: 120px; height: 120px; object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 3px solid var(--green-main);
+}
+
+/* ── ENHANCED ANIMATIONS ────────────────────────────────── */
+/* Card hover lift */
+.cb-drink-card, .cb-table-card, .cb-admin-card, .cb-stat-card {
+  will-change: transform;
+}
+
+/* Smooth page transitions */
+.cb-page {
+  animation: pageIn .25s ease;
+}
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Order type btn bounce */
+.cb-order-type-btn.active {
+  animation: btnActive .2s ease;
+}
+@keyframes btnActive {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(.96); }
+  100% { transform: scale(1); }
+}
+
+/* Success icon pulse */
+.cb-success-icon {
+  animation: successPulse .5s ease;
+}
+@keyframes successPulse {
+  0%   { transform: scale(0); opacity: 0; }
+  60%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+/* ── COUPON TABLE ────────────────────────────────────────── */
+code.cb-coupon-code {
+  background: var(--green-pale); color: var(--green-dark);
+  border-radius: 5px; padding: 3px 10px;
+  font-size: .85rem; font-weight: 700;
+  letter-spacing: .5px; border: 1px solid var(--green-light);
+}
+
+/* ── CART SIDEBAR IMPROVEMENTS ──────────────────────────── */
+.cb-sidebar-header { background: var(--green-dark); }
+.cb-btn-outline-gray {
+  border: 1.5px solid var(--border); background: #fff;
+  color: var(--text-mid); border-radius: var(--radius-sm);
+  font-weight: 500; transition: var(--transition);
+}
+.cb-btn-outline-gray:hover { border-color: var(--coral); color: var(--coral); }
+
+/* ── ENHANCED FILTER BTN SMALL ──────────────────────────── */
+.cb-filter-sm {
+  font-size: .78rem !important;
+  padding: .28rem .75rem !important;
+}
+
+/* ── NOTIFY BADGE ───────────────────────────────────────── */
+.cb-notif-badge {
+  background: var(--coral); color: #fff;
+  border-radius: 50%; width: 17px; height: 17px;
+  font-size: 10px; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+  vertical-align: middle; margin-left: 3px;
+  animation: badgePulse 2s ease-in-out infinite;
+}
+@keyframes badgePulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(217,95,59,.4); }
+  50%      { box-shadow: 0 0 0 5px rgba(217,95,59,0); }
+}
+
+/* ── ADMIN SIDEBAR IMPROVEMENTS ─────────────────────────── */
+.cb-admin-nav-item[data-page="coupons"] i { color: var(--amber); }
+.cb-admin-nav-item[data-page="coupons"].active i { color: #fff; }
+
+/* ── RESPONSIVE QR ──────────────────────────────────────── */
+@media (max-width: 400px) {
+  .cb-qr-layout { flex-direction: column; align-items: center; }
+  .cb-qr-img-wrap { width: 140px; height: 140px; }
+  .cb-qr-bank-info { width: 100%; }
+}

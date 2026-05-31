@@ -21,7 +21,7 @@ function calcCartTotals(cartArray) {    // YC1: hàm có tham số array, return
   for (var i = 0; i < cartArray.length; i++) {  // YC1: vòng lặp for
     subtotal += Number(cartArray[i].price) * cartArray[i].qty;
   }
-  var tax   = Math.round(subtotal * 0.1);
+  var tax   = Math.round(subtotal * 0.02);
   var total = subtotal + tax;
   return { subtotal: subtotal, tax: tax, total: total }; // YC1: return object
 }
@@ -173,4 +173,125 @@ var ANALYTICS = {
     localStorage.setItem(this.key, JSON.stringify(all));
   },
   clear: function() { localStorage.removeItem(this.key); }
+};
+// ============================================================
+// USER STORE – đăng ký / đăng nhập bằng email hoặc STD/tên
+// ============================================================
+var TAX_RATE = 0.02; // 2%
+
+var USERS = {
+  key: 'cbRegisteredUsers',
+  // Tài khoản admin mặc định (không lưu localStorage)
+  defaults: [
+    { id:'admin-001', username:'admin', password:'admin123', role:'admin', name:'Quản trị viên', email:'admin@cafebook.vn', std:'', createdAt:'' }
+  ],
+  getAll: function() {
+    try { return JSON.parse(localStorage.getItem(this.key)) || []; } catch(e) { return []; }
+  },
+  saveAll: function(list) {
+    localStorage.setItem(this.key, JSON.stringify(list));
+  },
+  // Đăng ký tài khoản mới
+  register: function(data) {
+    // data: { name, username, email, std, password }
+    var list = this.getAll();
+    // Kiểm tra trùng username hoặc email
+    var dup = list.find(function(u) {
+      return u.username === data.username || (data.email && u.email === data.email) || (data.std && u.std === data.std);
+    });
+    if (dup) return { ok: false, msg: 'Tên đăng nhập, email hoặc mã SV đã tồn tại!' };
+    var newUser = {
+      id: 'u-' + genId(),
+      username: data.username,
+      password: data.password,
+      role: 'guest',
+      name: data.name,
+      email: data.email || '',
+      std: data.std || '',
+      createdAt: new Date().toISOString()
+    };
+    list.push(newUser);
+    this.saveAll(list);
+    return { ok: true, user: newUser };
+  },
+  // Đăng nhập
+  login: function(usernameOrEmail, password) {
+    // Kiểm tra admin mặc định
+    for (var i = 0; i < this.defaults.length; i++) {
+      var d = this.defaults[i];
+      if ((d.username === usernameOrEmail || d.email === usernameOrEmail) && d.password === password) return d;
+    }
+    // Kiểm tra user đã đăng ký
+    var list = this.getAll();
+    for (var j = 0; j < list.length; j++) {
+      var u = list[j];
+      if ((u.username === usernameOrEmail || u.email === usernameOrEmail || (u.std && u.std === usernameOrEmail)) && u.password === password) return u;
+    }
+    return null;
+  }
+};
+
+// ============================================================
+// COUPON STORE – quản lý mã giảm giá
+// ============================================================
+var COUPONS = {
+  key: 'cbCoupons',
+  getAll: function() {
+    try {
+      var stored = JSON.parse(localStorage.getItem(this.key)) || [];
+      // Gộp mặc định
+      var defaults = [
+        { code:'CAFEBOOK20', discount:20, type:'percent', minOrder:50000, maxUse:100, used:0, active:true, desc:'Giảm 20% cho đơn từ 50.000đ', createdAt:'2025-01-01' },
+        { code:'WELCOME10',  discount:10, type:'percent', minOrder:0,     maxUse:50,  used:0, active:true, desc:'Chào mừng khách mới – giảm 10%', createdAt:'2025-01-01' }
+      ];
+      // Merge – ưu tiên localStorage
+      defaults.forEach(function(dc) {
+        if (!stored.find(function(s){ return s.code === dc.code; })) stored.unshift(dc);
+      });
+      return stored;
+    } catch(e) { return []; }
+  },
+  saveAll: function(list) {
+    localStorage.setItem(this.key, JSON.stringify(list));
+  },
+  // Tìm coupon hợp lệ
+  validate: function(code, subtotal) {
+    var list = this.getAll();
+    var c = list.find(function(x){ return x.code === (code||'').toUpperCase().trim(); });
+    if (!c)            return { ok: false, msg: 'Mã giảm giá không tồn tại' };
+    if (!c.active)     return { ok: false, msg: 'Mã giảm giá đã bị vô hiệu hoá' };
+    if (c.maxUse && c.used >= c.maxUse) return { ok: false, msg: 'Mã giảm giá đã hết lượt sử dụng' };
+    if (c.minOrder && subtotal < c.minOrder) return { ok: false, msg: 'Đơn hàng tối thiểu ' + formatPrice(c.minOrder) + ' để dùng mã này' };
+    // Tính giá trị giảm
+    var discountAmt = 0;
+    if (c.type === 'percent') discountAmt = Math.round(subtotal * c.discount / 100);
+    else discountAmt = Number(c.discount);
+    return { ok: true, coupon: c, discountAmt: discountAmt };
+  },
+  // Ghi nhận sử dụng
+  markUsed: function(code) {
+    var list = this.getAll();
+    var c = list.find(function(x){ return x.code === (code||'').toUpperCase().trim(); });
+    if (c) { c.used = (c.used||0) + 1; this.saveAll(list); }
+  },
+  // Thêm coupon mới (admin)
+  add: function(data) {
+    var list = this.getAll();
+    if (list.find(function(x){ return x.code === data.code; })) return { ok:false, msg:'Mã đã tồn tại' };
+    list.push(Object.assign({}, data, { used:0, createdAt: new Date().toISOString().split('T')[0] }));
+    this.saveAll(list);
+    return { ok:true };
+  },
+  // Cập nhật trạng thái (admin)
+  toggle: function(code) {
+    var list = this.getAll();
+    var c = list.find(function(x){ return x.code === code; });
+    if (c) { c.active = !c.active; this.saveAll(list); return c.active; }
+    return false;
+  },
+  // Xoá coupon
+  remove: function(code) {
+    var list = this.getAll().filter(function(x){ return x.code !== code; });
+    this.saveAll(list);
+  }
 };
