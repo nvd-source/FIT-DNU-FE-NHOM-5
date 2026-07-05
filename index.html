@@ -238,6 +238,10 @@
             <div class="d-flex justify-content-between mb-1 small text-muted">
               <span>Thuế (2%)</span><span id="receiptTax">0đ</span>
             </div>
+            <div class="d-flex justify-content-between mb-1 small" id="receiptDiscountRow" style="display:none;color:var(--green-main)">
+              <span><i class="bi bi-tag me-1"></i>Giảm giá</span>
+              <span id="receiptDiscountAmt">-0đ</span>
+            </div>
             <hr class="my-2"/>
             <div class="d-flex justify-content-between fw-bold">
               <span>Tổng cộng</span>
@@ -279,7 +283,7 @@
               <div class="cb-qr-layout">
                 <div class="cb-qr-img-wrap">
                   <img src="qr-cafebook.png" alt="QR Chuyển khoản CaféBook" class="cb-qr-img"
-                       onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=170x170&data=CafeBook-VietQR-Payment&color=1a3d2f'"/>
+                       onerror="handleQrImgError(this)"/>
                   <div class="cb-qr-scan-line"></div>
                 </div>
                 <div class="cb-qr-bank-info">
@@ -489,17 +493,17 @@
           <!-- === ĐĂNG NHẬP === -->
           <div id="loginFormWrap">
             <div id="guestLoginHint" class="cb-login-hint cb-login-hint-guest mb-3">
-              <i class="bi bi-info-circle me-2"></i>Đăng nhập bằng <strong>tên đăng nhập hoặc email</strong>
+              <i class="bi bi-info-circle me-2"></i>Đăng nhập bằng <strong>tên đăng nhập, email hoặc mã số SV</strong>
             </div>
             <div id="adminLoginHint" class="cb-login-hint cb-login-hint-admin mb-3 d-none">
-              <i class="bi bi-shield-lock me-2"></i>Đăng nhập với tài khoản <strong>admin</strong>
+              <i class="bi bi-shield-lock me-2"></i>Đăng nhập với tài khoản <strong>ADMIN</strong>
             </div>
             <form id="loginForm" novalidate>
               <div class="mb-3">
-                <label class="form-label cb-label" id="loginUserLabel">Tên đăng nhập / Email</label>
+                <label class="form-label cb-label" id="loginUserLabel">Tên đăng nhập / Email / Mã SV</label>
                 <div class="input-group">
                   <span class="input-group-text cb-ig-text"><i class="bi bi-person" id="loginUserIcon"></i></span>
-                  <input type="text" class="form-control cb-input" id="loginUsername" placeholder="email@example.com" autocomplete="username"/>
+                  <input type="text" class="form-control cb-input" id="loginUsername" placeholder="email@example.com hoặc mã SV" autocomplete="username"/>
                 </div>
                 <div class="cb-error-msg" id="err-loginUsername"></div>
               </div>
@@ -519,12 +523,20 @@
               </button>
             </form>
             <div id="adminDemoHint" class="d-none text-center mt-2">
-              <small class="text-muted">Demo admin: <b>admin</b> / admin123</small>
+              <small class="text-muted">Demo admin: <b>ADMIN</b> / 123456</small>
+            </div>
+            <div id="guestLoginLinks" class="text-center mt-3">
+              <small class="text-muted">Chưa có tài khoản? <a href="#" onclick="showAuthMode('register');return false;">Đăng ký ngay</a></small>
+              <br/>
+              <small class="text-muted"><a href="#" onclick="openForgotPassword();return false;">Quên mật khẩu?</a></small>
             </div>
           </div>
 
           <!-- === ĐĂNG KÝ === -->
           <div id="registerFormWrap" class="d-none">
+            <div class="cb-login-hint cb-login-hint-guest mb-3">
+              <i class="bi bi-info-circle me-2"></i>Cần <strong>Họ tên</strong> và ít nhất <strong>Gmail</strong> hoặc <strong>Mã số SV</strong> để tạo tài khoản.
+            </div>
             <form id="registerForm" novalidate>
               <div class="row g-2 mb-3">
                 <div class="col-6">
@@ -533,18 +545,19 @@
                   <div class="cb-error-msg" id="err-regName"></div>
                 </div>
                 <div class="col-6">
-                  <label class="form-label cb-label">Mã số SV (nếu có)</label>
+                  <label class="form-label cb-label">Mã số SV</label>
                   <input type="text" class="form-control cb-input" id="regStd" placeholder="19710700XX"/>
+                  <div class="cb-error-msg" id="err-regStd"></div>
                 </div>
               </div>
               <div class="mb-3">
-                <label class="form-label cb-label">Email <span class="text-danger">*</span></label>
-                <input type="email" class="form-control cb-input" id="regEmail" placeholder="email@example.com"/>
+                <label class="form-label cb-label">Gmail</label>
+                <input type="email" class="form-control cb-input" id="regEmail" placeholder="ten@gmail.com"/>
                 <div class="cb-error-msg" id="err-regEmail"></div>
               </div>
               <div class="mb-3">
-                <label class="form-label cb-label">Tên đăng nhập <span class="text-danger">*</span></label>
-                <input type="text" class="form-control cb-input" id="regUsername" placeholder="Tên ngắn dễ nhớ"/>
+                <label class="form-label cb-label">Tên đăng nhập (tuỳ chọn)</label>
+                <input type="text" class="form-control cb-input" id="regUsername" placeholder="Bỏ trống sẽ tự tạo từ Gmail/Mã SV"/>
                 <div class="cb-error-msg" id="err-regUsername"></div>
               </div>
               <div class="mb-3">
@@ -576,6 +589,42 @@
 </div>
 
 
+<!-- ======== FORGOT PASSWORD MODAL ======== -->
+<div class="modal fade" id="forgotPasswordModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-md">
+    <div class="modal-content cb-modal cb-auth-modal">
+      <div class="cb-auth-header">
+        <div class="cb-auth-logo"><i class="bi bi-key-fill"></i></div>
+        <h5 class="cb-auth-title">Quên mật khẩu</h5>
+        <p class="cb-auth-sub">Gửi yêu cầu tới quản trị viên để xác minh &amp; cấp lại</p>
+        <button type="button" class="btn-close btn-close-white cb-auth-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="cb-login-hint cb-login-hint-guest mb-3">
+          <i class="bi bi-info-circle me-2"></i>Nhập Gmail / Tên đăng nhập / Mã SV và số điện thoại để admin xác minh danh tính. Sau khi admin cấp lại mật khẩu, bạn sẽ nhận được <strong>thông báo riêng</strong> trong mục Thông báo.
+        </div>
+        <form id="forgotPasswordForm" novalidate>
+          <div class="mb-3">
+            <label class="form-label cb-label">Gmail / Tên đăng nhập / Mã SV <span class="text-danger">*</span></label>
+            <input type="text" class="form-control cb-input" id="fpIdentifier" placeholder="ten@gmail.com hoặc mã SV"/>
+            <div class="cb-error-msg" id="err-fpIdentifier"></div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label cb-label">Số điện thoại xác minh <span class="text-danger">*</span></label>
+            <input type="text" class="form-control cb-input" id="fpPhone" placeholder="0901234567"/>
+            <div class="cb-error-msg" id="err-fpPhone"></div>
+          </div>
+          <div id="forgotError" class="alert alert-danger py-2 d-none small"></div>
+          <div id="forgotSuccess" class="alert alert-success py-2 d-none small"></div>
+          <button type="submit" class="btn cb-btn-primary w-100 py-2">
+            <i class="bi bi-send-check me-1"></i>Gửi yêu cầu cho Admin
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ======== DRINK DETAIL MODAL ======== -->
 <div class="modal fade" id="drinkModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
@@ -585,7 +634,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body text-center">
-        <img id="drinkModalImg" src="" alt="" class="cb-drink-modal-img mb-3" onerror="this.src='qr-cafebook.png'"/>
+        <img id="drinkModalImg" src="" alt="" class="cb-drink-modal-img mb-3" onerror="this.src='https://placehold.co/300x200/d8f3dc/2d6a4f?text=CaféBook'"/>
         <p id="drinkModalDesc" class="text-muted small mb-3"></p>
         <div class="d-flex align-items-center justify-content-center gap-3 mb-3">
           <span class="fs-4 fw-bold cb-text-green" id="drinkModalPrice"></span>
@@ -614,14 +663,14 @@
         <h4 class="fw-bold mb-2" id="orderSuccessTitle">Đặt hàng thành công!</h4>
         <p class="text-muted" id="orderSuccessMsg"></p>
         <div class="cb-booking-ref p-3 mb-4 text-start" id="orderRef"></div>
-        <!-- QR xác nhận nếu thanh toán QR -->
-        <div id="orderQrConfirm" class="d-none mb-3">
+        <!-- QR thanh toán + số tiền — luôn hiển thị -->
+        <div id="orderQrConfirm" class="mb-3">
           <div class="cb-qr-confirm-box">
-            <p class="small fw-bold cb-text-green mb-2"><i class="bi bi-qr-code me-1"></i>Hoàn tất thanh toán</p>
-            <img src="qr-cafebook.png" class="cb-qr-confirm-img" alt="QR"
-                 onerror="this.src='qr-cafebook.png'"/>
-            <p class="small text-muted mt-2 mb-0">Chuyển khoản: <strong id="orderQrAmt" class="cb-text-green"></strong></p>
-            <p class="small text-muted mb-0">STK: <strong>029122007</strong> – MB Bank</p>
+            <p class="small fw-bold cb-text-green mb-2" id="orderQrConfirmTitle"><i class="bi bi-qr-code me-1"></i>Thanh toán chuyển khoản</p>
+            <img src="qr-cafebook.png" class="cb-qr-confirm-img" alt="QR Chuyển khoản CaféBook"
+                 onerror="handleQrImgError(this)"/>
+            <p class="small text-muted mt-2 mb-0">Số tiền: <strong id="orderQrAmt" class="cb-text-green"></strong></p>
+            <p class="small text-muted mb-0">STK: <strong>9999 0000 1234</strong> – MB Bank / VietQR</p>
           </div>
         </div>
         <button class="btn cb-btn-primary px-4" data-bs-dismiss="modal">Đóng</button>
@@ -639,6 +688,17 @@
         <h4 class="fw-bold mb-2">Đặt bàn thành công!</h4>
         <p class="text-muted" id="bookingSuccessMsg"></p>
         <div class="cb-booking-ref p-3 mb-4 text-start" id="bookingRef"></div>
+        <!-- QR đặt cọc giữ bàn — luôn hiển thị -->
+        <div id="bookingQrConfirm" class="mb-3">
+          <div class="cb-qr-confirm-box">
+            <p class="small fw-bold cb-text-green mb-2"><i class="bi bi-qr-code me-1"></i>Đặt cọc giữ bàn qua QR (tuỳ chọn)</p>
+            <img src="qr-cafebook.png" class="cb-qr-confirm-img" alt="QR Chuyển khoản CaféBook"
+                 onerror="handleQrImgError(this)"/>
+            <p class="small text-muted mt-2 mb-0">Số tiền cọc: <strong id="bookingQrAmt" class="cb-text-green"></strong></p>
+            <p class="small text-muted mb-0">STK: <strong>9999 0000 1234</strong> – MB Bank / VietQR</p>
+            <p class="small text-muted mb-0">Nội dung CK: <strong id="bookingQrNote"></strong></p>
+          </div>
+        </div>
         <button class="btn cb-btn-primary px-4" data-bs-dismiss="modal">Đóng</button>
       </div>
     </div>

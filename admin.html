@@ -36,7 +36,7 @@
                 type="text"
                 class="form-control cb-input"
                 id="adminUser"
-                placeholder="admin"
+                placeholder="ADMIN"
               />
             </div>
             <div class="cb-error-msg" id="err-adminUser"></div>
@@ -71,7 +71,7 @@
             <i class="bi bi-shield-lock me-2"></i>Đăng nhập Admin
           </button>
           <div class="text-center mt-3">
-            <small class="text-muted">Demo: <b>admin</b> / admin123</small>
+            <small class="text-muted">Demo: <b>ADMIN</b> / 123456</small>
           </div>
           <div class="text-center mt-2">
             <a href="index.html" class="small text-muted"
@@ -84,7 +84,9 @@
 
     <!-- DASHBOARD -->
     <div id="adminDashboard" class="d-none">
-      <div class="cb-admin-sidebar" id="adminSidebar">
+      <!-- Sidebar overlay – click outside to close on mobile -->
+  <div class="cb-admin-overlay" id="adminSidebarOverlay" onclick="closeSidebar()"></div>
+  <div class="cb-admin-sidebar" id="adminSidebar">
         <div class="cb-admin-brand">
           <i class="bi bi-cup-hot-fill"></i>
           <div>
@@ -137,6 +139,14 @@
             onclick="showPage('notifications')"
             ><i class="bi bi-bell"></i><span>Thông báo</span></a
           >
+          <a
+            href="#"
+            class="cb-admin-nav-item"
+            data-page="resetrequests"
+            onclick="showPage('resetrequests')"
+            ><i class="bi bi-key"></i><span>Quên mật khẩu</span
+            ><span class="cb-nav-badge" id="resetReqCount">0</span></a
+          >
         </nav>
         <div class="cb-admin-nav-footer">
           <a href="index.html" class="cb-admin-nav-item"
@@ -152,9 +162,9 @@
         <div class="cb-admin-topbar">
           <div class="d-flex align-items-center gap-3">
             <button
-              class="btn cb-sidebar-toggle d-lg-none"
+              class="btn cb-sidebar-toggle "
               onclick="toggleSidebar()"
-            >
+             title="Mở/đóng menu">
               <i class="bi bi-list fs-4"></i>
             </button>
             <h6 class="mb-0 fw-bold" id="pageTitle">Dashboard</h6>
@@ -606,6 +616,32 @@
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- PASSWORD RESET REQUESTS PAGE -->
+        <div id="page-resetrequests" class="cb-page d-none">
+          <div class="mb-4">
+            <h5 class="fw-bold mb-0"><i class="bi bi-key me-2 cb-text-green"></i>Yêu cầu cấp lại mật khẩu</h5>
+            <p class="text-muted small mb-0">Xác minh danh tính khách hàng rồi cấp mật khẩu mới</p>
+          </div>
+          <div class="cb-admin-card p-0 overflow-hidden">
+            <div class="table-responsive">
+              <table class="table cb-table mb-0">
+                <thead>
+                  <tr>
+                    <th>Khách hàng</th>
+                    <th>Gmail/Username/Mã SV</th>
+                    <th>SĐT xác minh</th>
+                    <th>Thời gian gửi</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="resetRequestsTableBody"></tbody>
+              </table>
+            </div>
+            <div id="resetRequestsEmpty" class="text-center text-muted py-4 d-none">Chưa có yêu cầu nào.</div>
           </div>
         </div>
       </div>

@@ -1,628 +1,866 @@
-/* ========== admin.js ========== */
-let adminDrinks=[],adminTables=[],adminReservations=[],filteredReservations=[];
-let editDrinkId=null,editTableId=null,currentPage=1;
-const PAGE_SIZE=10;
+/* ========== admin.js — CaféBook Admin (hoàn chỉnh) ========== */
+/* YC1: JS thuần | YC2: Fetch + Promise | YC3: Validate | YC4: jQuery */
 
-document.addEventListener('DOMContentLoaded',()=>{
+var adminDrinks       = [];
+var adminTables       = [];
+var adminReservations = [];
+var filteredReservations = [];
+var editDrinkId  = null;
+var editTableId  = null;
+var currentPage  = 1;
+var PAGE_SIZE    = 10;
+var sidebarOpen  = false;
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', function() {
   checkAdminAuth();
   updateAdminClock();
-  setInterval(updateAdminClock,1000);
-  document.getElementById('adminLoginForm').addEventListener('submit',handleAdminLogin);
-  // Live image preview
-  $(document).on('input','#drinkImage',function(){
-    const url=$(this).val().trim();
-    const preview=document.getElementById('drinkImgPreview');
-    const wrap=document.getElementById('drinkImgPreviewWrap');
-    if(url&&isValidImageUrl(url)){preview.src=url;wrap.style.display='';}
-    else wrap.style.display='none';
+  setInterval(updateAdminClock, 1000);
+
+  document.getElementById('adminLoginForm').addEventListener('submit', handleAdminLogin);
+
+  // YC4: jQuery live events
+  $(document).on('input', '#adminSearchDrink', debounce(filterDrinksTable, 280));
+  $(document).on('change','#adminFilterCat', filterDrinksTable);
+
+  // Image preview in drink modal
+  $(document).on('input', '#drinkImage', function() {
+    var url = $(this).val().trim();
+    var wrap = document.getElementById('drinkImgPreviewWrap');
+    var img  = document.getElementById('drinkImgPreview');
+    if (url && isValidImageUrl(url)) {
+      if (img) img.src = url;
+      if (wrap) wrap.style.display = '';
+    } else {
+      if (wrap) wrap.style.display = 'none';
+    }
   });
-  $(document).on('input','#adminSearchDrink',debounce(filterDrinksTable,280));
-  $(document).on('change','#adminFilterCat',filterDrinksTable);
-  document.getElementById('notifyForm').addEventListener('submit',handleNotifySubmit);
+
+  // Coupon code uppercase
+  $(document).on('input', '#cpnCode', function() {
+    this.value = this.value.toUpperCase();
+  });
+
+  document.getElementById('notifyForm').addEventListener('submit', handleNotifySubmit);
+
+  // Close sidebar when clicking overlay
+  var overlay = document.getElementById('adminSidebarOverlay');
+  if (overlay) overlay.addEventListener('click', closeSidebar);
 });
 
-function checkAdminAuth(){
-  const u=AUTH.get();
-  if(u&&u.role==='admin'){showDashboard(u);}
-  else{document.getElementById('adminLoginScreen').style.display='';document.getElementById('adminDashboard').classList.add('d-none');}
+// ===== AUTH =====
+function checkAdminAuth() {
+  var user = AUTH.get();
+  if (user && user.role === 'admin') {
+    showDashboard(user);
+  } else {
+    document.getElementById('adminLoginScreen').style.display = '';
+    document.getElementById('adminDashboard').classList.add('d-none');
+  }
 }
-function updateAdminClock(){const el=document.getElementById('adminTime');if(el)el.textContent=new Date().toLocaleString('vi-VN');}
 
-function handleAdminLogin(e){
+function updateAdminClock() {
+  var el = document.getElementById('adminTime');
+  if (el) el.textContent = new Date().toLocaleString('vi-VN');
+}
+
+function handleAdminLogin(e) {
   e.preventDefault();
-  const u=document.getElementById('adminUser').value.trim();
-  const p=document.getElementById('adminPass').value;
+  var u = document.getElementById('adminUser').value.trim();
+  var p = document.getElementById('adminPass').value;
   clearAllErrors(['adminUser','adminPass']);
   document.getElementById('adminLoginError').classList.add('d-none');
-  let valid=true;
-  if(!u){showError('adminUser','Vui lòng nhập tên đăng nhập');valid=false;}
-  if(!p){showError('adminPass','Vui lòng nhập mật khẩu');valid=false;}
-  if(!valid) return;
-  const user=AUTH.login(u,p);
-  if(!user||user.role!=='admin'){document.getElementById('adminLoginError').textContent='Sai thông tin hoặc không có quyền admin.';document.getElementById('adminLoginError').classList.remove('d-none');return;}
-  AUTH.save(user);showDashboard(user);
+  var valid = true;
+  if (!u) { showError('adminUser','Vui lòng nhập tên đăng nhập'); valid=false; }
+  if (!p) { showError('adminPass','Vui lòng nhập mật khẩu'); valid=false; }
+  if (!valid) return;
+  var user = USERS.login(u, p);
+  if (!user || user.role !== 'admin') {
+    document.getElementById('adminLoginError').textContent = 'Sai thông tin hoặc không có quyền admin.';
+    document.getElementById('adminLoginError').classList.remove('d-none');
+    return;
+  }
+  AUTH.save(user);
+  showDashboard(user);
 }
-function showDashboard(user){
-  document.getElementById('adminLoginScreen').style.display='none';
+
+function showDashboard(user) {
+  document.getElementById('adminLoginScreen').style.display = 'none';
   document.getElementById('adminDashboard').classList.remove('d-none');
-  if(user){
-    const initials=(user.name||'AD').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    document.getElementById('adminAvatarText').textContent=initials;
-    const nd=document.getElementById('adminNameDisplay');if(nd)nd.textContent=user.name||'Admin';
+  if (user) {
+    var words = (user.name||'Admin').split(' ');
+    var initials = '';
+    for (var w=0;w<words.length&&initials.length<2;w++) initials += words[w][0]||'';
+    var av = document.getElementById('adminAvatarText');
+    if (av) av.textContent = initials.toUpperCase();
+    var nd = document.getElementById('adminNameDisplay');
+    if (nd) nd.textContent = user.name || 'Admin';
   }
   loadDashboard();
+  updateResetReqBadge();
 }
-function adminLogout(){AUTH.logout();window.location.reload();}
-function toggleSidebar(){document.getElementById('adminSidebar').classList.toggle('open');}
 
-function showPage(page){
-  document.querySelectorAll('.cb-page').forEach(p=>p.classList.add('d-none'));
-  document.querySelectorAll('.cb-admin-nav-item').forEach(i=>i.classList.remove('active'));
-  const pg=document.getElementById('page-'+page);
-  if(pg)pg.classList.remove('d-none');
-  const nav=document.querySelector(`[data-page="${page}"]`);
-  if(nav)nav.classList.add('active');
-  const titles={dashboard:'Dashboard',analytics:'Phân tích bán hàng',drinks:'Quản lý thực đơn',tables:'Quản lý bàn',reservations:'Đặt bàn & Đơn hàng',notifications:'Gửi thông báo'};
-  document.getElementById('pageTitle').textContent=titles[page]||page;
-  if(page==='drinks')loadAdminDrinks();
-  if(page==='tables')loadAdminTables();
-  if(page==='reservations')loadAdminReservations();
-  if(page==='analytics')loadAnalytics();
-  if(page==='coupons')loadCoupons();
-  if(pg){pg.style.opacity=0;setTimeout(()=>{pg.style.transition='opacity .2s';pg.style.opacity=1;},10);}
+function adminLogout() { AUTH.logout(); window.location.reload(); }
+
+// ===== PASSWORD RESET REQUESTS (Quên mật khẩu) =====
+function updateResetReqBadge() {
+  var badge = document.getElementById('resetReqCount');
+  if (!badge) return;
+  var n = RESETREQ.getPending().length;
+  badge.textContent = n;
+  badge.style.display = n > 0 ? '' : 'none';
+}
+
+function loadResetRequests() {
+  var list = RESETREQ.getAll();
+  renderResetRequests(list);
+  updateResetReqBadge();
+}
+
+function renderResetRequests(list) {
+  var body  = document.getElementById('resetRequestsTableBody');
+  var empty = document.getElementById('resetRequestsEmpty');
+  if (!body) return;
+  if (!list || !list.length) {
+    body.innerHTML = '';
+    if (empty) empty.classList.remove('d-none');
+    return;
+  }
+  if (empty) empty.classList.add('d-none');
+  var smap = { pending:['cb-status-pending','Chờ xác minh'], done:['cb-status-confirmed','Đã cấp lại'], rejected:['cb-status-cancelled','Đã từ chối'] };
+  var html = '';
+  for (var i = 0; i < list.length; i++) { // YC1: for loop
+    var r  = list[i];
+    var sm = smap[r.status] || smap.pending;
+    html += '<tr>'
+      +'<td>'+(r.name||'')+'</td>'
+      +'<td>'+(r.identifier||'')+'</td>'
+      +'<td>'+(r.phone||'')+'</td>'
+      +'<td>'+formatDate(r.createdAt)+'</td>'
+      +'<td><span class="cb-status '+sm[0]+'">'+sm[1]+'</span></td>'
+      +'<td>'
+      +(r.status === 'pending'
+        ? '<button class="btn btn-sm cb-btn-primary me-1" onclick="approveResetRequest(\''+r.id+'\')"><i class="bi bi-check2 me-1"></i>Xác minh &amp; cấp lại</button>'
+          +'<button class="btn btn-sm btn-outline-danger" onclick="rejectResetRequest(\''+r.id+'\')"><i class="bi bi-x-lg"></i></button>'
+        : '<span class="text-muted small">—</span>')
+      +'</td>'
+      +'</tr>';
+  }
+  body.innerHTML = html;
+}
+
+function approveResetRequest(requestId) {
+  var result = RESETREQ.approve(requestId);
+  if (!result.ok) { showToast(result.msg, 'error'); return; }
+  // Gửi thông báo riêng cho khách với mật khẩu mới
+  NOTIF.add({
+    type: 'info',
+    title: '🔑 Mật khẩu của bạn đã được cấp lại',
+    message: 'Tài khoản (' + result.req.identifier + ') đã được admin xác minh. Mật khẩu mới của bạn là: ' + result.newPassword + '. Vui lòng đổi mật khẩu sau khi đăng nhập.'
+  });
+  showToast('Đã cấp lại mật khẩu mới cho ' + result.req.name, 'success');
+  loadResetRequests();
+}
+
+function rejectResetRequest(requestId) {
+  RESETREQ.reject(requestId);
+  showToast('Đã từ chối yêu cầu', 'warning');
+  loadResetRequests();
+}
+
+// ===== SIDEBAR =====
+function toggleSidebar() {
+  sidebarOpen = !sidebarOpen;
+  var sb  = document.getElementById('adminSidebar');
+  var ov  = document.getElementById('adminSidebarOverlay');
+  if (sb) sb.classList.toggle('open', sidebarOpen);
+  if (ov) ov.classList.toggle('active', sidebarOpen);
+}
+function closeSidebar() {
+  sidebarOpen = false;
+  var sb = document.getElementById('adminSidebar');
+  var ov = document.getElementById('adminSidebarOverlay');
+  if (sb) sb.classList.remove('open');
+  if (ov) ov.classList.remove('active');
+}
+
+// ===== PAGE NAVIGATION =====
+function showPage(page) {
+  // YC1: querySelectorAll, classList
+  document.querySelectorAll('.cb-page').forEach(function(p) { p.classList.add('d-none'); });
+  document.querySelectorAll('.cb-admin-nav-item').forEach(function(i) { i.classList.remove('active'); });
+
+  var pg = document.getElementById('page-' + page);
+  if (pg) pg.classList.remove('d-none');
+
+  var nav = document.querySelector('[data-page="' + page + '"]');
+  if (nav) nav.classList.add('active');
+
+  var titles = {
+    dashboard:'Dashboard', analytics:'Phân tích bán hàng',
+    drinks:'Quản lý thực đơn', tables:'Quản lý bàn',
+    reservations:'Đặt bàn & Đơn hàng',
+    coupons:'Mã giảm giá', notifications:'Gửi thông báo',
+    resetrequests:'Yêu cầu cấp lại mật khẩu'
+  };
+  var ptEl = document.getElementById('pageTitle');
+  if (ptEl) ptEl.textContent = titles[page] || page;
+
+  if (page === 'drinks')       loadAdminDrinks();
+  if (page === 'tables')       loadAdminTables();
+  if (page === 'reservations') loadAdminReservations();
+  if (page === 'analytics')    loadAnalytics();
+  if (page === 'coupons')      loadCoupons();
+  if (page === 'resetrequests') loadResetRequests();
+
+  // Close sidebar on mobile after nav
+  if (window.innerWidth < 992) closeSidebar();
+
+  // Fade-in animation
+  if (pg) {
+    pg.style.opacity = '0';
+    setTimeout(function() {
+      pg.style.transition = 'opacity .22s ease';
+      pg.style.opacity = '1';
+    }, 10);
+  }
 }
 
 // ===== DASHBOARD =====
-async function loadDashboard(){
-  try{
-    const[drinks,reservations]=await Promise.all([getDrinks(),getReservations()]);
-    adminDrinks=drinks;adminReservations=reservations;
-    const pending=reservations.filter(r=>r.status==='pending').length;
-    const confirmed=reservations.filter(r=>r.status==='confirmed').length;
-    document.getElementById('stat-total').textContent=reservations.length;
-    document.getElementById('stat-pending').textContent=pending;
-    document.getElementById('stat-confirmed').textContent=confirmed;
-    document.getElementById('stat-drinks').textContent=drinks.length;
-    document.getElementById('pendingCount').textContent=pending;
-    renderRecentReservations(reservations.slice(0,5));
-    renderTopDrinksWidget(drinks);
-  }catch{showToast('Không thể tải dashboard','error');}
+function loadDashboard() {
+  // YC2: Promise.all + .then/.catch
+  Promise.all([getDrinks(), getReservations()])
+    .then(function(results) {
+      var drinks       = results[0];
+      var reservations = results[1];
+      adminDrinks       = drinks;
+      adminReservations = reservations;
+
+      var pending   = 0; var confirmed = 0;
+      for (var i=0;i<reservations.length;i++) { // YC1: for loop
+        if (reservations[i].status==='pending')   pending++;
+        if (reservations[i].status==='confirmed') confirmed++;
+      }
+
+      // YC1: getElementById + DOM
+      document.getElementById('stat-total').textContent     = reservations.length;
+      document.getElementById('stat-pending').textContent   = pending;
+      document.getElementById('stat-confirmed').textContent = confirmed;
+      document.getElementById('stat-drinks').textContent    = drinks.length;
+      document.getElementById('pendingCount').textContent   = pending;
+      renderRecentReservations(reservations.slice(0,5));
+      renderTopDrinksWidget();
+    })
+    .catch(function() { showToast('Không thể tải dashboard','error'); });
 }
 
-function renderRecentReservations(list){
-  const c=document.getElementById('recentReservations');
-  if(!list||!list.length){c.innerHTML='<p class="text-muted text-center py-3">Chưa có đặt bàn nào.</p>';return;}
-  c.innerHTML=`<div class="table-responsive"><table class="table cb-table mb-0">
-    <thead><tr><th>Khách hàng</th><th>Loại</th><th>Bàn / Địa chỉ</th><th>Ngày & Giờ</th><th>Tổng tiền</th><th>Trạng thái</th></tr></thead>
-    <tbody>${list.map(r=>`<tr>
-      <td><strong>${r.guestName||'—'}</strong><br><small class="text-muted">${r.phone||''}</small></td>
-      <td>${typeBadge(r.type||r.orderType)}</td>
-      <td>${r.tableName||r.address||r.tableId||'—'}</td>
-      <td>${formatDate(r.date||r.createdAt)}<br><small class="text-muted">${r.time||''}</small></td>
-      <td class="fw-500 cb-text-green">${r.total?formatPrice(r.total):'—'}</td>
-      <td>${statusBadge(r.status)}</td>
-    </tr>`).join('')}</tbody>
-  </table></div>`;
+function renderRecentReservations(list) {
+  var c = document.getElementById('recentReservations');
+  if (!list || !list.length) {
+    c.innerHTML = '<p class="text-muted text-center py-3">Chưa có đơn nào.</p>';
+    return;
+  }
+  var html = '<div class="table-responsive"><table class="table cb-table mb-0"><thead><tr>'
+    +'<th>Khách hàng</th><th>Loại</th><th>Bàn / Địa chỉ</th><th>Thời gian</th><th>Tổng tiền</th><th>Trạng thái</th>'
+    +'</tr></thead><tbody>';
+  for (var i=0;i<list.length;i++) { // YC1: for loop
+    var r = list[i];
+    html += '<tr>'
+      +'<td><strong>'+( r.guestName||'—')+'</strong><br><small class="text-muted">'+(r.phone||'')+'</small></td>'
+      +'<td>'+typeBadge(r.type||r.orderType)+'</td>'
+      +'<td>'+(r.tableName||r.address||r.tableId||'—')+'</td>'
+      +'<td><small>'+formatDate(r.date||r.createdAt)+'<br>'+(r.time||'')+'</small></td>'
+      +'<td class="fw-500 cb-text-green">'+(r.total?formatPrice(r.total):'—')+'</td>'
+      +'<td>'+statusBadge(r.status)+'</td>'
+      +'</tr>';
+  }
+  html += '</tbody></table></div>';
+  c.innerHTML = html; // YC1: innerHTML
 }
 
-function renderTopDrinksWidget(drinks){
-  const top=ANALYTICS.getAll().sort((a,b)=>b.count-a.count).slice(0,5);
-  const c=document.getElementById('topDrinksWidget');
-  if(!top.length){c.innerHTML='<p class="text-muted small text-center py-2">Chưa có dữ liệu bán hàng</p>';return;}
-  const max=top[0].count||1;
-  c.innerHTML=top.map((item,i)=>`
-    <div class="mb-3">
-      <div class="d-flex justify-content-between small mb-1">
-        <span class="fw-500">${i+1}. ${item.name}</span>
-        <span class="text-muted">${item.count} ly</span>
-      </div>
-      <div class="cb-progress-bar"><div class="cb-progress-fill" style="width:${Math.round(item.count/max*100)}%"></div></div>
-    </div>`).join('');
+function renderTopDrinksWidget() {
+  var top = ANALYTICS.getAll().sort(function(a,b){ return b.count - a.count; }).slice(0,5);
+  var c   = document.getElementById('topDrinksWidget');
+  if (!top.length) {
+    c.innerHTML = '<p class="text-muted small text-center py-2">Chưa có dữ liệu bán hàng.<br><small>Khi khách đặt món sẽ tích lũy tại đây.</small></p>';
+    return;
+  }
+  var max  = top[0].count || 1;
+  var html = '';
+  for (var i=0;i<top.length;i++) { // YC1: for
+    var item = top[i];
+    var pct  = Math.round(item.count / max * 100);
+    html += '<div class="mb-3">'
+      +'<div class="d-flex justify-content-between small mb-1">'
+      +'<span class="fw-500">'+(i+1)+'. '+item.name+'</span>'
+      +'<span class="text-muted">'+item.count+' lượt</span>'
+      +'</div>'
+      +'<div class="cb-progress-bar"><div class="cb-progress-fill" style="width:'+pct+'%"></div></div>'
+      +'</div>';
+  }
+  c.innerHTML = html;
 }
 
 // ===== ANALYTICS =====
-async function loadAnalytics(){
-  try{
-    const [reservations,drinks]=await Promise.all([getReservations(),getDrinks()]);
-    adminDrinks=drinks;
-    const analytics=ANALYTICS.getAll();
-    const allOrders=reservations.filter(r=>r.type==='order'||r.orderType);
-    const totalRevenue=reservations.reduce((s,r)=>s+(Number(r.total)||0),0);
-    const totalItems=analytics.reduce((s,a)=>s+a.count,0);
-    const avgOrder=allOrders.length?Math.round(totalRevenue/allOrders.length):0;
+function loadAnalytics() {
+  Promise.all([getReservations(), getDrinks()])
+    .then(function(res) {
+      var reservations = res[0];
+      adminDrinks      = res[1];
+      var analytics    = ANALYTICS.getAll();
 
-    document.getElementById('an-revenue').textContent=formatPrice(totalRevenue);
-    document.getElementById('an-orders').textContent=allOrders.length;
-    document.getElementById('an-items').textContent=totalItems;
-    document.getElementById('an-avg').textContent=formatPrice(avgOrder);
+      var totalRevenue = 0; var orderCount = 0;
+      for (var i=0;i<reservations.length;i++) { // YC1: for
+        totalRevenue += Number(reservations[i].total)||0;
+        if (reservations[i].type==='order'||reservations[i].orderType) orderCount++;
+      }
+      var totalItems = 0;
+      for (var j=0;j<analytics.length;j++) totalItems += analytics[j].count;
+      var avgOrder = orderCount ? Math.round(totalRevenue / orderCount) : 0;
 
-    renderAnalyticsTable(analytics,totalItems);
-    renderCategoryChart(analytics);
-    renderOrderTypeChart(reservations);
-  }catch(e){showToast('Không thể tải analytics','error');}
+      document.getElementById('an-revenue').textContent = formatPrice(totalRevenue);
+      document.getElementById('an-orders').textContent  = orderCount;
+      document.getElementById('an-items').textContent   = totalItems;
+      document.getElementById('an-avg').textContent     = formatPrice(avgOrder);
+
+      renderAnalyticsTable(analytics, totalItems);
+      renderCategoryChart(analytics);
+      renderOrderTypeChart(reservations);
+    })
+    .catch(function() { showToast('Không thể tải analytics','error'); });
 }
 
-function renderAnalyticsTable(analytics,totalItems){
-  const sorted=[...analytics].sort((a,b)=>b.count-a.count);
-  const tbody=document.getElementById('analyticsTableBody');
-  if(!sorted.length){tbody.innerHTML='<tr><td colspan="6" class="text-center text-muted py-4">Chưa có dữ liệu bán hàng.<br><small>Khi khách đặt món, dữ liệu sẽ tích lũy tại đây.</small></td></tr>';return;}
-  const medals=['🥇','🥈','🥉'];
-  tbody.innerHTML=sorted.map((item,i)=>{
-    const pct=totalItems?Math.round(item.count/totalItems*100):0;
-    return`<tr>
-      <td>${medals[i]||`#${i+1}`}</td>
-      <td class="fw-500">${item.name}</td>
-      <td><span class="badge bg-light text-dark border">${item.category||'—'}</span></td>
-      <td><span class="fw-bold">${item.count}</span></td>
-      <td class="cb-text-green fw-500">${formatPrice(item.revenue||0)}</td>
-      <td>
-        <div class="d-flex align-items-center gap-2">
-          <div class="cb-progress-bar flex-grow-1"><div class="cb-progress-fill" style="width:${pct}%"></div></div>
-          <span class="small text-muted">${pct}%</span>
-        </div>
-      </td>
-    </tr>`;
-  }).join('');
+function renderAnalyticsTable(analytics, totalItems) {
+  var sorted = analytics.slice().sort(function(a,b){ return b.count-a.count; });
+  var tbody  = document.getElementById('analyticsTableBody');
+  if (!sorted.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Chưa có dữ liệu bán hàng.<br><small>Khi khách đặt món, dữ liệu sẽ tích lũy tại đây.</small></td></tr>';
+    return;
+  }
+  var medals = ['🥇','🥈','🥉'];
+  var html   = '';
+  for (var i=0;i<sorted.length;i++) { // YC1: for
+    var item = sorted[i];
+    var pct  = totalItems ? Math.round(item.count/totalItems*100) : 0;
+    html += '<tr>'
+      +'<td>'+(medals[i]||'#'+(i+1))+'</td>'
+      +'<td class="fw-500">'+item.name+'</td>'
+      +'<td><span class="badge bg-light text-dark border">'+(item.category||'—')+'</span></td>'
+      +'<td><span class="fw-bold">'+item.count+'</span></td>'
+      +'<td class="cb-text-green fw-500">'+formatPrice(item.revenue||0)+'</td>'
+      +'<td><div class="d-flex align-items-center gap-2">'
+      +'<div class="cb-progress-bar flex-grow-1"><div class="cb-progress-fill" style="width:'+pct+'%"></div></div>'
+      +'<span class="small text-muted">'+pct+'%</span></div></td>'
+      +'</tr>';
+  }
+  tbody.innerHTML = html;
 }
 
-function renderCategoryChart(analytics){
-  const cats={};
-  analytics.forEach(a=>{const c=a.category||'Khác';cats[c]=(cats[c]||0)+a.revenue;});
-  const total=Object.values(cats).reduce((s,v)=>s+v,0)||1;
-  const colors=['#2d6a4f','#40916c','#74c69d','#e09f3e','#d95f3b'];
-  const el=document.getElementById('categoryChart');
-  if(!Object.keys(cats).length){el.innerHTML='<p class="text-muted small text-center py-2">Chưa có dữ liệu</p>';return;}
-  el.innerHTML=Object.entries(cats).map(([cat,rev],i)=>{
-    const pct=Math.round(rev/total*100);
-    return`<div class="mb-2">
-      <div class="d-flex justify-content-between small mb-1">
-        <span style="color:${colors[i%colors.length]}" class="fw-500">${cat}</span>
-        <span class="text-muted">${formatPrice(rev)} (${pct}%)</span>
-      </div>
-      <div class="cb-progress-bar"><div class="cb-progress-fill" style="width:${pct}%;background:${colors[i%colors.length]}"></div></div>
-    </div>`;
-  }).join('');
+function renderCategoryChart(analytics) {
+  var cats   = {};
+  for (var i=0;i<analytics.length;i++) { // YC1: for
+    var cat  = analytics[i].category || 'Khác';
+    cats[cat] = (cats[cat]||0) + analytics[i].revenue;
+  }
+  var total  = 0;
+  var keys   = Object.keys(cats);
+  for (var j=0;j<keys.length;j++) total += cats[keys[j]];
+  if (!total) total = 1;
+  var colors = ['#2d6a4f','#40916c','#74c69d','#e09f3e','#d95f3b'];
+  var el     = document.getElementById('categoryChart');
+  if (!keys.length) { el.innerHTML='<p class="text-muted small text-center py-2">Chưa có dữ liệu</p>'; return; }
+  var html   = '';
+  for (var k=0;k<keys.length;k++) {
+    var pct = Math.round(cats[keys[k]]/total*100);
+    html += '<div class="mb-3"><div class="d-flex justify-content-between small mb-1">'
+      +'<span style="color:'+colors[k%colors.length]+'" class="fw-500">'+keys[k]+'</span>'
+      +'<span class="text-muted">'+formatPrice(cats[keys[k]])+' ('+pct+'%)</span></div>'
+      +'<div class="cb-progress-bar"><div class="cb-progress-fill" style="width:'+pct+'%;background:'+colors[k%colors.length]+'"></div></div></div>';
+  }
+  el.innerHTML = html;
 }
 
-function renderOrderTypeChart(reservations){
-  const types={'reservation':0,'order':0};
-  reservations.forEach(r=>{const t=r.type||'reservation';types[t]=(types[t]||0)+1;});
-  const total=Object.values(types).reduce((s,v)=>s+v,0)||1;
-  const labels={'reservation':'Đặt bàn','order':'Đặt món'};
-  const colors={'reservation':'#2d6a4f','order':'#e09f3e'};
-  const el=document.getElementById('orderTypeChart');
-  el.innerHTML=Object.entries(types).map(([type,count])=>{
-    const pct=Math.round(count/total*100);
-    return`<div class="mb-2">
-      <div class="d-flex justify-content-between small mb-1">
-        <span style="color:${colors[type]}" class="fw-500">${labels[type]||type}</span>
-        <span class="text-muted">${count} (${pct}%)</span>
-      </div>
-      <div class="cb-progress-bar"><div class="cb-progress-fill" style="width:${pct}%;background:${colors[type]}"></div></div>
-    </div>`;
-  }).join('');
+function renderOrderTypeChart(reservations) {
+  var types  = { reservation:0, order:0 };
+  for (var i=0;i<reservations.length;i++) { // YC1: for
+    var t = reservations[i].type || 'reservation';
+    if (t!=='reservation' && t!=='order') t='reservation';
+    types[t]++;
+  }
+  var total  = types.reservation + types.order || 1;
+  var labels = { reservation:'Đặt bàn', order:'Đặt món' };
+  var colors = { reservation:'#2d6a4f', order:'#e09f3e' };
+  var el     = document.getElementById('orderTypeChart');
+  var html   = '';
+  var keys   = ['reservation','order'];
+  for (var k=0;k<keys.length;k++) {
+    var key = keys[k];
+    var pct = Math.round(types[key]/total*100);
+    html += '<div class="mb-3"><div class="d-flex justify-content-between small mb-1">'
+      +'<span style="color:'+colors[key]+'" class="fw-500">'+labels[key]+'</span>'
+      +'<span class="text-muted">'+types[key]+' ('+pct+'%)</span></div>'
+      +'<div class="cb-progress-bar"><div class="cb-progress-fill" style="width:'+pct+'%;background:'+colors[key]+'"></div></div></div>';
+  }
+  el.innerHTML = html;
 }
 
 // ===== DRINKS CRUD =====
-async function loadAdminDrinks(){
-  $('#drinksLoading').removeClass('d-none');$('#drinksTableBody').html('');
-  try{
-    adminDrinks=await getDrinks();
-    $('#drinksLoading').addClass('d-none');
-    renderDrinksTable(adminDrinks);
-  }catch{$('#drinksLoading').addClass('d-none');showToast('Không thể tải thực đơn','error');}
+function loadAdminDrinks() {
+  $('#drinksLoading').removeClass('d-none');
+  // YC4: jQuery .html()
+  $('#drinksTableBody').html('');
+  // YC2: getDrinks + .then/.catch
+  getDrinks()
+    .then(function(drinks) {
+      adminDrinks = drinks;
+      $('#drinksLoading').addClass('d-none');
+      renderDrinksTable(adminDrinks);
+    })
+    .catch(function() {
+      $('#drinksLoading').addClass('d-none');
+      showToast('Không thể tải thực đơn','error');
+    });
 }
 
-function renderDrinksTable(drinks){
-  const tbody=document.getElementById('drinksTableBody');
-  if(!drinks||!drinks.length){tbody.innerHTML='<tr><td colspan="6" class="text-center text-muted py-4">Chưa có món nào.</td></tr>';return;}
-  tbody.innerHTML=drinks.map(d=>`<tr>
-    <td><img class="cb-admin-thumb" src="${d.image||d.imageUrl||'https://placehold.co/48x48/d8f3dc/2d6a4f?text=☕'}" alt="${d.name||''}" onerror="this.src='https://placehold.co/48x48/d8f3dc/2d6a4f?text=CF'"/></td>
-    <td><strong>${d.name||'—'}</strong></td>
-    <td><span class="badge bg-light text-dark border">${d.category||d.type||'—'}</span></td>
-    <td class="text-nowrap fw-500 cb-text-green">${formatPrice(d.price)}</td>
-    <td style="max-width:180px"><small class="text-muted">${(d.description||'').slice(0,60)}${(d.description||'').length>60?'…':''}</small></td>
-    <td class="text-nowrap">
-      <button class="btn btn-sm btn-outline-success me-1" onclick="openDrinkModal('${d.id}')" title="Sửa"><i class="bi bi-pencil"></i></button>
-      <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete('drink','${d.id}','${(d.name||'').replace(/'/g,'')}')" title="Xóa"><i class="bi bi-trash3"></i></button>
-    </td>
-  </tr>`).join('');
+function renderDrinksTable(drinks) {
+  var tbody = document.getElementById('drinksTableBody');
+  if (!drinks || !drinks.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Chưa có món nào.</td></tr>';
+    return;
+  }
+  var html = '';
+  for (var i=0;i<drinks.length;i++) { // YC1: for loop
+    var d = drinks[i];
+    html += '<tr>'
+      +'<td><img class="cb-admin-thumb" src="'+(d.image||d.imageUrl||'https://placehold.co/48/d8f3dc/2d6a4f?text=☕')+'"'
+      +' loading="lazy" onerror="this.src=\'https://placehold.co/48x48/d8f3dc/2d6a4f?text=CF\'"/></td>'
+      +'<td><strong>'+(d.name||'—')+'</strong></td>'
+      +'<td><span class="badge bg-light text-dark border">'+(d.category||d.type||'—')+'</span></td>'
+      +'<td class="fw-500 cb-text-green">'+formatPrice(d.price)+'</td>'
+      +'<td style="max-width:180px"><small class="text-muted">'+((d.description||'').slice(0,60))+((d.description||'').length>60?'…':'')+'</small></td>'
+      +'<td class="text-nowrap">'
+      +'<button class="btn btn-sm btn-outline-success me-1" onclick="openDrinkModal(\''+d.id+'\')" title="Sửa"><i class="bi bi-pencil"></i></button>'
+      +'<button class="btn btn-sm btn-outline-danger" onclick="confirmDelete(\'drink\',\''+d.id+'\',\''+((d.name||'').replace(/'/g,''))+'\')"><i class="bi bi-trash3"></i></button>'
+      +'</td></tr>';
+  }
+  tbody.innerHTML = html; // YC1: innerHTML
 }
 
-function filterDrinksTable(){
-  const search=($('#adminSearchDrink').val()||'').toLowerCase();
-  const cat=$('#adminFilterCat').val()||'';
-  let f=adminDrinks;
-  if(search) f=f.filter(d=>(d.name||'').toLowerCase().includes(search)||(d.description||'').toLowerCase().includes(search));
-  if(cat) f=f.filter(d=>(d.category||d.type||'')===cat);
-  renderDrinksTable(f);
+function filterDrinksTable() {
+  var search = ($('#adminSearchDrink').val()||'').toLowerCase();
+  var cat    = $('#adminFilterCat').val()||'';
+  var filtered = adminDrinks.slice();
+  if (search) filtered = filtered.filter(function(d){ return (d.name||'').toLowerCase().includes(search)||(d.description||'').toLowerCase().includes(search); });
+  if (cat)    filtered = filtered.filter(function(d){ return (d.category||d.type||'')===cat; });
+  renderDrinksTable(filtered);
 }
 
-function openDrinkModal(id=null){
-  editDrinkId=id;
+function openDrinkModal(id) {
+  editDrinkId = id || null;
   clearAllErrors(['drinkName','drinkPrice','drinkCategory','drinkImage']);
-  document.getElementById('drinkImgPreviewWrap').style.display='none';
-  if(id){
-    const d=adminDrinks.find(x=>String(x.id)===String(id));
-    if(!d) return;
-    document.getElementById('drinkModalTitle').textContent='Sửa món';
-    document.getElementById('drinkId').value=d.id;
-    document.getElementById('drinkName').value=d.name||'';
-    document.getElementById('drinkPrice').value=d.price||'';
-    document.getElementById('drinkCategory').value=d.category||d.type||'';
-    document.getElementById('drinkImage').value=d.image||d.imageUrl||'';
-    document.getElementById('drinkDesc').value=d.description||'';
-    if(d.image||d.imageUrl){document.getElementById('drinkImgPreview').src=d.image||d.imageUrl;document.getElementById('drinkImgPreviewWrap').style.display='';}
-  }else{
-    document.getElementById('drinkModalTitle').textContent='Thêm món mới';
+  var wrap = document.getElementById('drinkImgPreviewWrap');
+  if (wrap) wrap.style.display='none';
+  if (id) {
+    var d = null;
+    for (var i=0;i<adminDrinks.length;i++) { if(String(adminDrinks[i].id)===String(id)){d=adminDrinks[i];break;} }
+    if (!d) return;
+    document.getElementById('drinkModalTitle').textContent = 'Sửa món';
+    // YC4: jQuery .val()
+    $('#drinkId').val(d.id);
+    $('#drinkName').val(d.name||'');
+    $('#drinkPrice').val(d.price||'');
+    $('#drinkCategory').val(d.category||d.type||'');
+    $('#drinkImage').val(d.image||d.imageUrl||'');
+    $('#drinkDesc').val(d.description||'');
+    var img  = document.getElementById('drinkImgPreview');
+    if ((d.image||d.imageUrl) && wrap && img) { img.src = d.image||d.imageUrl; wrap.style.display=''; }
+  } else {
+    document.getElementById('drinkModalTitle').textContent = 'Thêm món mới';
     document.getElementById('drinkForm').reset();
   }
   new bootstrap.Modal(document.getElementById('drinkEditModal')).show();
 }
 
-function validateDrinkForm(){
+function validateDrinkForm() { // YC3
   clearAllErrors(['drinkName','drinkPrice','drinkCategory','drinkImage']);
-  let valid=true;
-  const name=document.getElementById('drinkName').value.trim();
-  const price=Number(document.getElementById('drinkPrice').value);
-  const cat=document.getElementById('drinkCategory').value;
-  const img=document.getElementById('drinkImage').value.trim();
-  if(!name){showError('drinkName','Tên món không được để trống');valid=false;}
-  if(!price||price<=0){showError('drinkPrice','Giá phải lớn hơn 0');valid=false;}
-  if(!cat){showError('drinkCategory','Vui lòng chọn danh mục');valid=false;}
-  if(!img){showError('drinkImage','URL ảnh không được để trống');valid=false;}
-  else if(!isValidImageUrl(img)){showError('drinkImage','URL ảnh không hợp lệ');valid=false;}
+  var valid = true;
+  var name  = document.getElementById('drinkName').value.trim();
+  var price = Number(document.getElementById('drinkPrice').value);
+  var cat   = document.getElementById('drinkCategory').value;
+  var img   = document.getElementById('drinkImage').value.trim();
+  if (!name)              { showError('drinkName','Tên món không được để trống'); valid=false; }
+  if (!price||price<=0)   { showError('drinkPrice','Giá phải lớn hơn 0'); valid=false; }
+  if (!cat)               { showError('drinkCategory','Vui lòng chọn danh mục'); valid=false; }
+  if (!img)               { showError('drinkImage','URL ảnh không được để trống'); valid=false; }
+  else if (!isValidImageUrl(img)) { showError('drinkImage','URL ảnh không hợp lệ (phải bắt đầu https://)'); valid=false; }
   return valid;
 }
 
-async function saveDrink(){
-  if(!validateDrinkForm()) return;
-  const data={name:document.getElementById('drinkName').value.trim(),price:Number(document.getElementById('drinkPrice').value),category:document.getElementById('drinkCategory').value,image:document.getElementById('drinkImage').value.trim(),description:document.getElementById('drinkDesc').value.trim()};
-  $('#saveDrinkText').addClass('d-none');$('#saveDrinkSpinner').removeClass('d-none');$('#saveDrinkBtn').prop('disabled',true);
-  try{
-    if(editDrinkId){await updateDrink(editDrinkId,data);showToast('Cập nhật món thành công!','success');}
-    else{await createDrink(data);showToast('Thêm món mới thành công!','success');}
-    bootstrap.Modal.getInstance(document.getElementById('drinkEditModal')).hide();
-    loadAdminDrinks();loadDashboard();
-  }catch{showToast('Lưu thất bại. Vui lòng thử lại!','error');}
-  finally{$('#saveDrinkText').removeClass('d-none');$('#saveDrinkSpinner').addClass('d-none');$('#saveDrinkBtn').prop('disabled',false);}
-}
+function saveDrink() {
+  if (!validateDrinkForm()) return;
+  var data = {
+    name:        document.getElementById('drinkName').value.trim(),
+    price:       Number(document.getElementById('drinkPrice').value),
+    category:    document.getElementById('drinkCategory').value,
+    image:       document.getElementById('drinkImage').value.trim(),
+    description: document.getElementById('drinkDesc').value.trim()
+  };
+  // YC4: jQuery show/hide
+  $('#saveDrinkText').hide(); $('#saveDrinkSpinner').show();
+  $('#saveDrinkBtn').prop('disabled', true);
 
-// ===== IMPORT DRINKS FROM API =====
-async function openImportDrinksModal(){
-  document.getElementById('importDrinksUrl').value='';
-  document.getElementById('importDrinksResult').innerHTML='';
-  document.getElementById('importDrinksForm').reset();
-  new bootstrap.Modal(document.getElementById('importDrinksModal')).show();
-}
-
-async function importDrinksFromApi(){
-  const url=document.getElementById('importDrinksUrl').value.trim();
-  const resultDiv=document.getElementById('importDrinksResult');
-  
-  if(!url){
-    showError('importDrinksUrl','Vui lòng nhập URL API');
-    return;
-  }
-  
-  if(!url.startsWith('http://') && !url.startsWith('https://')){
-    showError('importDrinksUrl','URL phải bắt đầu với http:// hoặc https://');
-    return;
-  }
-  
-  clearError('importDrinksUrl');
-  $('#importDrinksText').addClass('d-none');
-  $('#importDrinksSpinner').removeClass('d-none');
-  $('#importDrinksBtn').prop('disabled',true);
-  resultDiv.innerHTML='<div class="text-center"><div class="cb-spinner"></div> Đang tải dữ liệu...</div>';
-  
-  try{
-    const data=await apiFetch(url);
-    const drinks=Array.isArray(data)?data:data.data||data.items||[];
-    
-    if(!drinks.length){
-      resultDiv.innerHTML='<div class="alert alert-warning"><i class="bi bi-exclamation-triangle me-2"></i>Không tìm thấy dữ liệu đồ uống trong API</div>';
-      return;
-    }
-    
-    let successCount=0,errorCount=0;
-    const results=[];
-    
-    for(const item of drinks){
-      try{
-        const drinkData={
-          name:item.name||item.title||item.productName||'',
-          price:Number(item.price)||0,
-          category:item.category||item.type||item.category_name||'Khác',
-          image:item.image||item.imageUrl||item.img||item.photo||'https://placehold.co/48x48/d8f3dc/2d6a4f?text=☕',
-          description:item.description||item.desc||item.notes||''
-        };
-        
-        if(!drinkData.name||!drinkData.price){
-          errorCount++;
-          results.push(`<small class="text-danger"><i class="bi bi-x-circle me-1"></i>${item.name||'(Không có tên)'} - Thiếu thông tin bắt buộc</small>`);
-          continue;
-        }
-        
-        await createDrink(drinkData);
-        successCount++;
-        results.push(`<small class="text-success"><i class="bi bi-check-circle me-1"></i>${drinkData.name}</small>`);
-      }catch(e){
-        errorCount++;
-        results.push(`<small class="text-danger"><i class="bi bi-x-circle me-1"></i>${item.name||'(Lỗi)'} - ${e.message}</small>`);
-      }
-    }
-    
-    resultDiv.innerHTML=`
-      <div class="alert alert-info mb-3">
-        <strong>Kết quả import:</strong> ${successCount} thành công, ${errorCount} thất bại
-      </div>
-      <div style="max-height:200px;overflow-y:auto;">
-        ${results.join('<br>')}
-      </div>
-    `;
-    
-    if(successCount>0){
-      showToast(`Đã thêm ${successCount} món thành công!`,'success');
-      setTimeout(()=>{
-        bootstrap.Modal.getInstance(document.getElementById('importDrinksModal')).hide();
-        loadAdminDrinks();
-        loadDashboard();
-      },1500);
-    }
-  }catch(e){
-    resultDiv.innerHTML=`<div class="alert alert-danger"><i class="bi bi-exclamation-circle me-2"></i>Lỗi: ${e.message}</div>`;
-    showError('importDrinksUrl',e.message);
-  }finally{
-    $('#importDrinksText').removeClass('d-none');
-    $('#importDrinksSpinner').addClass('d-none');
-    $('#importDrinksBtn').prop('disabled',false);
-  }
+  var promise = editDrinkId ? updateDrink(editDrinkId, data) : createDrink(data);
+  promise
+    .then(function() {
+      showToast(editDrinkId ? 'Cập nhật món thành công!' : 'Thêm món mới thành công!', 'success');
+      bootstrap.Modal.getInstance(document.getElementById('drinkEditModal')).hide();
+      document.getElementById('drinkForm').reset(); // YC3: reset form
+      loadAdminDrinks();
+      loadDashboard();
+    })
+    .catch(function() { showToast('Lưu thất bại. Vui lòng thử lại!','error'); })
+    .finally(function() {
+      $('#saveDrinkText').show(); $('#saveDrinkSpinner').hide();
+      $('#saveDrinkBtn').prop('disabled', false);
+    });
 }
 
 // ===== TABLES CRUD =====
-async function loadAdminTables(){
-  try{
-    adminTables=await getTables();
-    renderTablesTable(adminTables);
-  }catch{showToast('Không thể tải bàn','error');}
+function loadAdminTables() {
+  $('#adminTablesLoading').show();
+  $('#adminTablesGrid').html('');
+  getTables()
+    .then(function(tables) {
+      adminTables = tables;
+      $('#adminTablesLoading').hide();
+      renderAdminTables(tables);
+      // Stats
+      var av=0, re=0, oc=0;
+      for (var i=0;i<tables.length;i++) { // YC1: for
+        var st = (tables[i].status||'available').toLowerCase();
+        if (st==='available') av++;
+        else if (st==='reserved') re++;
+        else oc++;
+      }
+      var sa = document.getElementById('tableStatAvail');    if(sa) sa.textContent=av;
+      var sr = document.getElementById('tableStatReserved'); if(sr) sr.textContent=re;
+      var so = document.getElementById('tableStatOccupied'); if(so) so.textContent=oc;
+    })
+    .catch(function() {
+      $('#adminTablesLoading').hide();
+      showToast('Không thể tải bàn','error');
+    });
 }
 
-function renderTablesTable(tables){
-  const container=document.getElementById('adminTablesGrid');
-  if(!container){console.error('adminTablesGrid not found');return;}
-  if(!tables||!tables.length){container.innerHTML='<div class="col-12"><p class="text-center text-muted py-4">Chưa có bàn nào.</p></div>';return;}
-  container.innerHTML=tables.map(t=>`
-    <div class="col-sm-6 col-lg-4">
-      <div class="cb-admin-card">
-        <h6 class="fw-bold mb-2">${t.name||t.tableName||'—'}</h6>
-        <p class="mb-2"><span class="badge bg-light text-dark border">${t.capacity||'—'} chỗ</span></p>
-        <p class="mb-3"><span class="cb-status ${t.status==='available'?'cb-status-confirmed':'cb-status-pending'}">${t.status==='available'?'Trống':'Đang sử dụng'}</span></p>
-        <div class="d-flex gap-2">
-          <button class="btn btn-sm btn-outline-success flex-grow-1" onclick="openTableModal('${t.id}')" title="Sửa"><i class="bi bi-pencil me-1"></i>Sửa</button>
-          <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete('table','${t.id}','${(t.name||t.tableName||'').replace(/'/g,'')}')" title="Xóa"><i class="bi bi-trash3"></i></button>
-        </div>
-      </div>
-    </div>`).join('');
+function renderAdminTables(tables) {
+  var grid = document.getElementById('adminTablesGrid');
+  if (!tables || !tables.length) {
+    grid.innerHTML = '<div class="col-12 text-center text-muted py-4">Chưa có bàn nào.</div>';
+    return;
+  }
+  var smap = { available:['cb-status-confirmed','Còn trống'], reserved:['cb-status-pending','Đã đặt'], occupied:['cb-status-cancelled','Đang dùng'] };
+  var imap = { available:'bi-chair', reserved:'bi-calendar-check', occupied:'bi-person-fill' };
+  var html = '';
+  for (var i=0;i<tables.length;i++) { // YC1: for loop
+    var t  = tables[i];
+    var st = (t.status||'available').toLowerCase();
+    var sm = smap[st] || smap.available;
+    html += '<div class="col-6 col-md-4 col-lg-3">'
+      +'<div class="cb-admin-card text-center p-3">'
+      +'<div style="font-size:2rem;color:var(--green-main)" class="mb-2"><i class="bi '+(imap[st]||'bi-chair')+'"></i></div>'
+      +'<div class="fw-600">'+(t.name||'Bàn '+t.id)+'</div>'
+      +'<div class="text-muted small mb-2"><i class="bi bi-people me-1"></i>'+(t.capacity||2)+' khách · '+(t.zone||'Indoor')+'</div>'
+      +'<span class="cb-status '+sm[0]+' d-block mb-2">'+sm[1]+'</span>'
+      +'<div class="d-flex gap-2 justify-content-center flex-wrap mb-2">'
+      +'<select class="form-select form-select-sm cb-input" style="width:auto;font-size:.75rem" onchange="quickUpdateTableStatus(\''+t.id+'\',this.value)">'
+      +'<option value="available"'+(st==='available'?' selected':'')+'>Còn trống</option>'
+      +'<option value="reserved"'+(st==='reserved'?' selected':'')+'>Đã đặt</option>'
+      +'<option value="occupied"'+(st==='occupied'?' selected':'')+'>Đang dùng</option>'
+      +'</select></div>'
+      +'<div class="d-flex gap-2 justify-content-center">'
+      +'<button class="btn btn-sm btn-outline-success" onclick="openTableModal(\''+t.id+'\')" title="Sửa"><i class="bi bi-pencil"></i></button>'
+      +'<button class="btn btn-sm btn-outline-danger" onclick="confirmDelete(\'table\',\''+t.id+'\',\''+((t.name||'Bàn').replace(/'/g,''))+'\')" title="Xóa"><i class="bi bi-trash3"></i></button>'
+      +'</div></div></div>';
+  }
+  grid.innerHTML = html;
 }
 
-function openTableModal(id=null){
-  editTableId=id;
+function quickUpdateTableStatus(id, status) {
+  updateTable(id, { status:status })
+    .then(function() { showToast('Cập nhật bàn thành công','success'); loadAdminTables(); })
+    .catch(function() { showToast('Cập nhật thất bại','error'); });
+}
+
+function openTableModal(id) {
+  editTableId = id || null;
   clearAllErrors(['tableName','tableCapacity']);
-  if(id){
-    const t=adminTables.find(x=>String(x.id)===String(id));
-    if(!t) return;
-    document.getElementById('tableModalTitle').textContent='Sửa bàn';
-    document.getElementById('tableId').value=t.id;
-    document.getElementById('tableName').value=t.name||t.tableName||'';
-    document.getElementById('tableCapacity').value=t.capacity||'';
-  }else{
-    document.getElementById('tableModalTitle').textContent='Thêm bàn mới';
+  if (id) {
+    var t = null;
+    for (var i=0;i<adminTables.length;i++) { if(String(adminTables[i].id)===String(id)){t=adminTables[i];break;} }
+    if (!t) return;
+    document.getElementById('tableModalTitle').textContent = 'Sửa bàn';
+    $('#tableId').val(t.id);
+    $('#tableName').val(t.name||'');
+    $('#tableCapacity').val(t.capacity||'');
+    $('#tableStatus').val(t.status||'available');
+    $('#tableZone').val(t.zone||'Indoor');
+  } else {
+    document.getElementById('tableModalTitle').textContent = 'Thêm bàn mới';
     document.getElementById('tableForm').reset();
   }
   new bootstrap.Modal(document.getElementById('tableEditModal')).show();
 }
 
-function validateTableForm(){
+function saveTable() {
   clearAllErrors(['tableName','tableCapacity']);
-  let valid=true;
-  const name=document.getElementById('tableName').value.trim();
-  const cap=Number(document.getElementById('tableCapacity').value);
-  if(!name){showError('tableName','Tên bàn không được để trống');valid=false;}
-  if(!cap||cap<=0){showError('tableCapacity','Sức chứa phải lớn hơn 0');valid=false;}
-  return valid;
+  var name = document.getElementById('tableName').value.trim();
+  var cap  = Number(document.getElementById('tableCapacity').value);
+  var valid = true;
+  if (!name)           { showError('tableName','Tên bàn không được để trống'); valid=false; }
+  if (!cap||cap<1)     { showError('tableCapacity','Sức chứa phải lớn hơn 0'); valid=false; }
+  else if (cap>10)     { showError('tableCapacity','Tối đa 10 khách mỗi bàn'); valid=false; }
+  if (!valid) return;
+  var data = {
+    name:     name, capacity:cap,
+    status:   document.getElementById('tableStatus').value,
+    zone:     document.getElementById('tableZone').value
+  };
+  var promise = editTableId ? updateTable(editTableId, data) : createTable(data);
+  promise
+    .then(function() {
+      showToast(editTableId ? 'Cập nhật bàn thành công!' : 'Thêm bàn thành công!','success');
+      bootstrap.Modal.getInstance(document.getElementById('tableEditModal')).hide();
+      document.getElementById('tableForm').reset();
+      loadAdminTables();
+    })
+    .catch(function() { showToast('Lưu thất bại','error'); });
 }
 
-async function saveTable(){
-  if(!validateTableForm()) return;
-  const data={name:document.getElementById('tableName').value.trim(),capacity:Number(document.getElementById('tableCapacity').value),status:'available'};
-  $('#saveTableText').addClass('d-none');$('#saveTableSpinner').removeClass('d-none');$('#saveTableBtn').prop('disabled',true);
-  try{
-    if(editTableId){await updateTable(editTableId,data);showToast('Cập nhật bàn thành công!','success');}
-    else{await createTable(data);showToast('Thêm bàn mới thành công!','success');}
-    bootstrap.Modal.getInstance(document.getElementById('tableEditModal')).hide();
-    loadAdminTables();
-  }catch{showToast('Lưu thất bại. Vui lòng thử lại!','error');}
-  finally{$('#saveTableText').removeClass('d-none');$('#saveTableSpinner').addClass('d-none');$('#saveTableBtn').prop('disabled',false);}
+// ===== RESERVATIONS =====
+function loadAdminReservations() {
+  $('#reservLoading').show();
+  $('#reservTableBody').html('');
+  // YC4: jQuery AJAX (jqGetReservations)
+  jqGetReservations(
+    function(data) {
+      adminReservations    = data;
+      filteredReservations = data;
+      $('#reservLoading').hide();
+      renderReservationsTable(paginate(filteredReservations, 1));
+      renderPagination(filteredReservations.length);
+      updatePendingBadge();
+    },
+    function() {
+      $('#reservLoading').hide();
+      showToast('Không thể tải danh sách đặt bàn','error');
+    }
+  );
 }
 
-// ===== RESERVATIONS CRUD =====
-async function loadAdminReservations(){
-  const loading=document.getElementById('reservLoading');
-  if(loading) loading.style.display='';
-  try{
-    adminReservations=await getReservations();
-    if(loading) loading.style.display='none';
-    filteredReservations=adminReservations;
-    renderReservationsTable(adminReservations);
-  }catch{
-    if(loading) loading.style.display='none';
-    showToast('Không thể tải đơn','error');
+function filterReservations() {
+  var type   = document.getElementById('filterType').value;
+  var status = document.getElementById('filterStatus').value;
+  filteredReservations = adminReservations.filter(function(r) {
+    var rtype  = r.type || 'reservation';
+    var tMatch = !type   || rtype === type;
+    var sMatch = !status || r.status === status;
+    return tMatch && sMatch;
+  });
+  currentPage = 1;
+  renderReservationsTable(paginate(filteredReservations, 1));
+  renderPagination(filteredReservations.length);
+}
+
+function paginate(list, page) {
+  var start = (page-1)*PAGE_SIZE;
+  return list.slice(start, start+PAGE_SIZE);
+}
+
+function renderPagination(total) {
+  var pages = Math.ceil(total / PAGE_SIZE);
+  var c     = document.getElementById('reservPagination');
+  if (!c || pages<=1) { if(c) c.innerHTML=''; return; }
+  var html = '<nav><ul class="pagination pagination-sm">';
+  html += '<li class="page-item'+(currentPage===1?' disabled':'')+'"><button class="page-link" onclick="goPage('+(currentPage-1)+')">‹</button></li>';
+  for (var i=1;i<=pages;i++) { // YC1: for
+    html += '<li class="page-item'+(i===currentPage?' active':'')+'"><button class="page-link" onclick="goPage('+i+')">'+i+'</button></li>';
   }
+  html += '<li class="page-item'+(currentPage===pages?' disabled':'')+'"><button class="page-link" onclick="goPage('+(currentPage+1)+')">›</button></li>';
+  html += '</ul></nav>';
+  c.innerHTML = html;
 }
 
-function renderReservationsTable(reservations){
-  const tbody=document.getElementById('reservTableBody');
-  if(!tbody){console.error('reservTableBody not found');return;}
-  if(!reservations||!reservations.length){tbody.innerHTML='<tr><td colspan="9" class="text-center text-muted py-4">Chưa có đơn nào.</td></tr>';return;}
-  tbody.innerHTML=reservations.map(r=>{
-    const rtype=r.type||'reservation';
-    const items=r.items?`${r.items.length} món`:'';
-    const detail=rtype==='order'?items:`${r.guestCount||'—'} khách`;
-    return`<tr>
-      <td class="text-muted small">#${r.id||'—'}</td>
-      <td>${typeBadge(rtype)}</td>
-      <td><strong>${r.guestName||'—'}</strong><br><small class="text-muted">${r.phone||''}</small></td>
-      <td><small>${detail}</small>${r.note?`<br><small class="text-muted"><i class="bi bi-chat-dots me-1"></i>${r.note.slice(0,30)}</small>`:''}</td>
-      <td><small>${r.tableName||r.address||r.tableId||'—'}</small></td>
-      <td class="text-nowrap"><small>${formatDate(r.date||r.createdAt)}<br>${r.time||''}</small></td>
-      <td class="fw-500 text-nowrap ${r.total?'cb-text-green':''}">${r.total?formatPrice(r.total):'—'}</td>
-      <td>${statusBadge(r.status)}</td>
-      <td class="text-nowrap">
-        <button class="btn btn-sm btn-outline-secondary me-1" onclick="showReservDetail('${r.id}')" title="Chi tiết"><i class="bi bi-eye"></i></button>
-        ${r.status==='pending'?`
-          <button class="btn btn-sm btn-success me-1" onclick="changeReservStatus('${r.id}','confirmed')" title="Xác nhận"><i class="bi bi-check-lg"></i></button>
-          <button class="btn btn-sm btn-warning me-1" onclick="changeReservStatus('${r.id}','cancelled')" title="Hủy"><i class="bi bi-x-lg"></i></button>`:''}
-        <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete('reservation','${r.id}','#${r.id}')" title="Xóa"><i class="bi bi-trash3"></i></button>
-      </td>
-    </tr>`;
-  }).join('');
+function goPage(page) {
+  var pages = Math.ceil(filteredReservations.length / PAGE_SIZE);
+  if (page<1||page>pages) return;
+  currentPage = page;
+  renderReservationsTable(paginate(filteredReservations, page));
+  renderPagination(filteredReservations.length);
 }
 
-function showReservDetail(id){
-  const r=adminReservations.find(x=>String(x.id)===String(id));
-  if(!r)return;
-  document.getElementById('reservDetailTitle').textContent=`Chi tiết đơn #${r.id}`;
-  const isOrder=r.type==='order'||r.orderType;
-  const itemsHtml=r.items&&r.items.length?`
-    <h6 class="fw-600 mt-3 mb-2">Danh sách món:</h6>
-    ${r.items.map(it=>`<div class="d-flex justify-content-between py-1 border-bottom small"><span>${it.name} × ${it.qty}</span><span class="fw-500">${formatPrice(Number(it.price)*it.qty)}</span></div>`).join('')}
-    <div class="d-flex justify-content-between pt-2 fw-bold"><span>Tổng cộng</span><span class="cb-text-green">${formatPrice(r.total)}</span></div>`:'';
-  document.getElementById('reservDetailBody').innerHTML=`
-    <div class="row g-3">
-      <div class="col-md-6">
-        <div class="cb-admin-card p-3">
-          <h6 class="fw-600 mb-3"><i class="bi bi-person me-2 cb-text-green"></i>Thông tin khách</h6>
-          <p class="mb-1 small"><strong>Họ tên:</strong> ${r.guestName||'—'}</p>
-          <p class="mb-1 small"><strong>Điện thoại:</strong> ${r.phone||'—'}</p>
-          <p class="mb-1 small"><strong>Email:</strong> ${r.email||'—'}</p>
-          <p class="mb-0 small"><strong>Ghi chú:</strong> ${r.note||'Không có'}</p>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="cb-admin-card p-3">
-          <h6 class="fw-600 mb-3"><i class="bi bi-info-circle me-2 cb-text-green"></i>Thông tin đơn</h6>
-          <p class="mb-1 small"><strong>Loại:</strong> ${typeBadge(r.type||r.orderType||'reservation')}</p>
-          <p class="mb-1 small"><strong>Hình thức:</strong> ${r.orderType?({dineIn:'Tại quán',takeaway:'Mang về',online:'Đặt online'}[r.orderType]||r.orderType):'Đặt bàn'}</p>
-          <p class="mb-1 small"><strong>Bàn / Địa chỉ:</strong> ${r.tableName||r.address||r.tableId||'—'}</p>
-          <p class="mb-1 small"><strong>Ngày & Giờ:</strong> ${formatDate(r.date||r.createdAt)} ${r.time||''}</p>
-          <p class="mb-0 small"><strong>Trạng thái:</strong> ${statusBadge(r.status)}</p>
-        </div>
-      </div>
-      ${itemsHtml?`<div class="col-12"><div class="cb-admin-card p-3">${itemsHtml}</div></div>`:''}
-    </div>
-    ${r.status==='pending'?`<div class="d-flex gap-2 mt-3">
-      <button class="btn cb-btn-primary flex-grow-1" onclick="changeReservStatus('${r.id}','confirmed');bootstrap.Modal.getInstance(document.getElementById('reservDetailModal')).hide()"><i class="bi bi-check-lg me-2"></i>Xác nhận</button>
-      <button class="btn btn-outline-danger flex-grow-1" onclick="changeReservStatus('${r.id}','cancelled');bootstrap.Modal.getInstance(document.getElementById('reservDetailModal')).hide()"><i class="bi bi-x-lg me-2"></i>Hủy đơn</button>
-    </div>`:''}`;
+function renderReservationsTable(list) {
+  var tbody = document.getElementById('reservTableBody');
+  if (!list || !list.length) {
+    tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">Không có đơn nào.</td></tr>';
+    return;
+  }
+  var html = '';
+  for (var i=0;i<list.length;i++) { // YC1: for loop
+    var r     = list[i];
+    var rtype = r.type || 'reservation';
+    var detail = rtype==='order' ? (r.items?r.items.length+' món':'—') : (r.guestCount||'—')+' khách';
+    html += '<tr>'
+      +'<td class="text-muted small">#'+(r.id||'—')+'</td>'
+      +'<td>'+typeBadge(rtype)+'</td>'
+      +'<td><strong>'+(r.guestName||'—')+'</strong><br><small class="text-muted">'+(r.phone||'')+'</small></td>'
+      +'<td><small>'+detail+'</small>'+(r.note?'<br><small class="text-muted"><i class="bi bi-chat-dots me-1"></i>'+r.note.slice(0,30)+'</small>':'')+'</td>'
+      +'<td><small>'+(r.tableName||r.address||r.tableId||'—')+'</small></td>'
+      +'<td class="text-nowrap"><small>'+formatDate(r.date||r.createdAt)+'<br>'+(r.time||'')+'</small></td>'
+      +'<td class="fw-500 text-nowrap'+(r.total?' cb-text-green':'')+'">'+( r.total?formatPrice(r.total):'—')+'</td>'
+      +'<td>'+statusBadge(r.status)+'</td>'
+      +'<td class="text-nowrap">'
+      +'<button class="btn btn-sm btn-outline-secondary me-1" onclick="showReservDetail(\''+r.id+'\')" title="Chi tiết"><i class="bi bi-eye"></i></button>'
+      +(r.status==='pending'
+        ?'<button class="btn btn-sm btn-success me-1" onclick="changeReservStatus(\''+r.id+'\',\'confirmed\')" title="Xác nhận"><i class="bi bi-check-lg"></i></button>'
+        +'<button class="btn btn-sm btn-warning me-1" onclick="changeReservStatus(\''+r.id+'\',\'cancelled\')" title="Hủy"><i class="bi bi-x-lg"></i></button>'
+        :'')
+      +'<button class="btn btn-sm btn-outline-danger" onclick="confirmDelete(\'reservation\',\''+r.id+'\',\'#'+r.id+'\')" title="Xóa"><i class="bi bi-trash3"></i></button>'
+      +'</td></tr>';
+  }
+  tbody.innerHTML = html;
+}
+
+function showReservDetail(id) {
+  var r = null;
+  for (var i=0;i<adminReservations.length;i++) { if(String(adminReservations[i].id)===String(id)){r=adminReservations[i];break;} }
+  if (!r) return;
+  document.getElementById('reservDetailTitle').textContent = 'Chi tiết đơn #'+r.id;
+  var isOrder   = r.type==='order'||r.orderType;
+  var otMap     = { 'dine-in':'Tại quán','takeaway':'Mang về','online':'Đặt online' };
+  var itemsHtml = '';
+  if (r.items && r.items.length) {
+    itemsHtml = '<h6 class="fw-600 mt-3 mb-2">Danh sách món:</h6>';
+    for (var j=0;j<r.items.length;j++) {
+      var it = r.items[j];
+      itemsHtml += '<div class="d-flex justify-content-between py-1 border-bottom small">'
+        +'<span>'+it.name+' × '+it.qty+'</span>'
+        +'<span class="fw-500">'+formatPrice(Number(it.price)*it.qty)+'</span></div>';
+    }
+    if (r.discount) itemsHtml += '<div class="d-flex justify-content-between py-1 small cb-text-green"><span>Giảm giá'+(r.couponCode?' ('+r.couponCode+')':'')+'</span><span>-'+formatPrice(r.discount)+'</span></div>';
+    itemsHtml += '<div class="d-flex justify-content-between pt-2 fw-bold"><span>Tổng cộng</span><span class="cb-text-green">'+formatPrice(r.total)+'</span></div>';
+  }
+  document.getElementById('reservDetailBody').innerHTML =
+    '<div class="row g-3">'
+    +'<div class="col-md-6"><div class="cb-admin-card p-3">'
+    +'<h6 class="fw-600 mb-3"><i class="bi bi-person me-2 cb-text-green"></i>Thông tin khách</h6>'
+    +'<p class="mb-1 small"><strong>Họ tên:</strong> '+(r.guestName||'—')+'</p>'
+    +'<p class="mb-1 small"><strong>Điện thoại:</strong> '+(r.phone||'—')+'</p>'
+    +'<p class="mb-1 small"><strong>Email:</strong> '+(r.email||'—')+'</p>'
+    +'<p class="mb-0 small"><strong>Ghi chú:</strong> '+(r.note||'Không có')+'</p>'
+    +'</div></div>'
+    +'<div class="col-md-6"><div class="cb-admin-card p-3">'
+    +'<h6 class="fw-600 mb-3"><i class="bi bi-info-circle me-2 cb-text-green"></i>Thông tin đơn</h6>'
+    +'<p class="mb-1 small"><strong>Loại:</strong> '+typeBadge(r.type||'reservation')+'</p>'
+    +(r.orderType?'<p class="mb-1 small"><strong>Hình thức:</strong> '+(otMap[r.orderType]||r.orderType)+'</p>':'')
+    +(r.payMethod?'<p class="mb-1 small"><strong>Thanh toán:</strong> '+(r.payMethod==='qr'?'Quét QR':'Tiền mặt')+'</p>':'')
+    +'<p class="mb-1 small"><strong>Bàn / Địa chỉ:</strong> '+(r.tableName||r.address||r.tableId||'—')+'</p>'
+    +'<p class="mb-1 small"><strong>Ngày & Giờ:</strong> '+formatDate(r.date||r.createdAt)+' '+(r.time||'')+'</p>'
+    +'<p class="mb-0 small"><strong>Trạng thái:</strong> '+statusBadge(r.status)+'</p>'
+    +'</div></div>'
+    +(itemsHtml?'<div class="col-12"><div class="cb-admin-card p-3">'+itemsHtml+'</div></div>':'')
+    +'</div>'
+    +(r.status==='pending'
+      ?'<div class="d-flex gap-2 mt-3">'
+      +'<button class="btn cb-btn-primary flex-grow-1" onclick="changeReservStatus(\''+r.id+'\',\'confirmed\');bootstrap.Modal.getInstance(document.getElementById(\'reservDetailModal\')).hide()"><i class="bi bi-check-lg me-2"></i>Xác nhận</button>'
+      +'<button class="btn btn-outline-danger flex-grow-1" onclick="changeReservStatus(\''+r.id+'\',\'cancelled\');bootstrap.Modal.getInstance(document.getElementById(\'reservDetailModal\')).hide()"><i class="bi bi-x-lg me-2"></i>Hủy đơn</button>'
+      +'</div>':'');
   new bootstrap.Modal(document.getElementById('reservDetailModal')).show();
 }
 
-async function changeReservStatus(id,status){
-  jqUpdateReservationStatus(id,status,()=>{
-    showToast(status==='confirmed'?`✅ Đã xác nhận đơn #${id}`:`❌ Đã hủy đơn #${id}`,'success');
-    const r=adminReservations.find(x=>String(x.id)===String(id));
-    if(r){
-      NOTIF.add({type:status==='confirmed'?'booking':'info',
-        title:status==='confirmed'?'Đơn của bạn đã được xác nhận!':'Đơn hàng bị hủy',
-        message:status==='confirmed'?`Bàn ${r.tableName||r.tableId||''} lúc ${r.time||''} ngày ${formatDate(r.date||r.createdAt)} đã xác nhận.`:`Đơn #${id} đã bị hủy. Liên hệ quán để biết thêm.`,
-        icon:status==='confirmed'?'bi-calendar-check':'bi-x-circle'});
-      // Update analytics if confirmed order
-      if(status==='confirmed'&&r.items&&r.items.length) ANALYTICS.addOrder(r.items);
-    }
-    loadAdminReservations();loadDashboard();
-  },()=>showToast('Cập nhật thất bại','error'));
+function changeReservStatus(id, status) {
+  // YC4: jqUpdateReservationStatus (jQuery AJAX)
+  jqUpdateReservationStatus(id, status,
+    function() {
+      showToast(status==='confirmed'?'✅ Đã xác nhận đơn #'+id:'❌ Đã hủy đơn #'+id,'success');
+      var r = null;
+      for (var i=0;i<adminReservations.length;i++) { if(String(adminReservations[i].id)===String(id)){r=adminReservations[i];break;} }
+      if (r) {
+        NOTIF.add({
+          type: status==='confirmed'?'booking':'info',
+          title: status==='confirmed'?'Đơn của bạn đã được xác nhận!':'Đơn hàng bị hủy',
+          message: status==='confirmed'
+            ?'Bàn '+(r.tableName||r.tableId||'')+' lúc '+(r.time||'')+' ngày '+formatDate(r.date||r.createdAt)+' đã xác nhận.'
+            :'Đơn #'+id+' đã bị hủy. Liên hệ quán để biết thêm.'
+        });
+        if (status==='confirmed' && r.items && r.items.length) ANALYTICS.addOrder(r.items);
+      }
+      loadAdminReservations();
+      loadDashboard();
+    },
+    function() { showToast('Cập nhật thất bại','error'); }
+  );
 }
 
-function updatePendingBadge(){
-  const p=adminReservations.filter(r=>r.status==='pending').length;
-  $('#pendingCount').text(p);
-  const se=document.getElementById('stat-pending');if(se)se.textContent=p;
+function updatePendingBadge() {
+  var p = 0;
+  for (var i=0;i<adminReservations.length;i++) { if(adminReservations[i].status==='pending') p++; }
+  var el = document.getElementById('pendingCount');
+  if (el) el.textContent = p;
+  var sp = document.getElementById('stat-pending');
+  if (sp) sp.textContent = p;
 }
 
-// ===== STATUS/TYPE BADGES =====
-function statusBadge(status){
-  const m={pending:['cb-status-pending','Chờ xác nhận'],confirmed:['cb-status-confirmed','Đã xác nhận'],cancelled:['cb-status-cancelled','Đã hủy']};
-  const[cls,label]=m[status]||m.pending;
-  return`<span class="cb-status ${cls}">${label}</span>`;
+// ===== STATUS / TYPE BADGES =====
+function statusBadge(status) {
+  var m = { pending:['cb-status-pending','Chờ xác nhận'], confirmed:['cb-status-confirmed','Đã xác nhận'], cancelled:['cb-status-cancelled','Đã hủy'] };
+  var s = m[status] || m.pending;
+  return '<span class="cb-status '+s[0]+'">'+s[1]+'</span>';
 }
-function typeBadge(type){
-  const m={reservation:'<span class="badge bg-light text-dark border"><i class="bi bi-calendar-check me-1"></i>Đặt bàn</span>',order:'<span class="badge cb-badge-amber"><i class="bi bi-bag me-1"></i>Đặt món</span>'};
-  return m[type]||m.reservation;
+function typeBadge(type) {
+  if (type==='order') return '<span class="badge cb-badge-amber"><i class="bi bi-bag me-1"></i>Đặt món</span>';
+  return '<span class="badge bg-light text-dark border"><i class="bi bi-calendar-check me-1"></i>Đặt bàn</span>';
 }
 
 // ===== DELETE =====
-function confirmDelete(type,id,label){
-  const modal=new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
-  document.getElementById('deleteConfirmMsg').textContent=`Bạn có chắc muốn xóa "${label}"? Thao tác không thể hoàn tác.`;
-  document.getElementById('confirmDeleteBtn').onclick=async()=>{
-    try{
-      if(type==='drink') await deleteDrink(id);
-      if(type==='table') await deleteTable(id);
-      if(type==='reservation') await deleteReservation(id);
-      bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
-      showToast('Đã xóa thành công!','success');
-      if(type==='drink') loadAdminDrinks();
-      if(type==='table') loadAdminTables();
-      if(type==='reservation') loadAdminReservations();
-      loadDashboard();
-    }catch{showToast('Xóa thất bại','error');}
-  };
+function confirmDelete(type, id, label) {
+  document.getElementById('deleteConfirmMsg').textContent = 'Bạn có chắc muốn xóa "'+label+'"? Thao tác không thể hoàn tác.';
+  var modal  = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+  var delBtn = document.getElementById('confirmDeleteBtn');
+  // Remove old listener and add fresh one
+  var newBtn = delBtn.cloneNode(true);
+  delBtn.parentNode.replaceChild(newBtn, delBtn);
+  newBtn.addEventListener('click', function() {
+    var promise;
+    if (type==='drink')       promise = deleteDrink(id);
+    if (type==='table')       promise = deleteTable(id);
+    if (type==='reservation') promise = deleteReservation(id);
+    promise
+      .then(function() {
+        bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
+        showToast('Đã xóa thành công!','success');
+        if (type==='drink')       loadAdminDrinks();
+        if (type==='table')       loadAdminTables();
+        if (type==='reservation') loadAdminReservations();
+        loadDashboard();
+      })
+      .catch(function() { showToast('Xóa thất bại','error'); });
+  });
   modal.show();
 }
 
-// ===== NOTIFICATIONS =====
-function handleNotifySubmit(e){
-  e.preventDefault();
-  clearAllErrors(['notifyTitle','notifyContent']);
-  const title=document.getElementById('notifyTitle').value.trim();
-  const content=document.getElementById('notifyContent').value.trim();
-  const type=document.getElementById('notifyType').value;
-  let valid=true;
-  if(!title){showError('notifyTitle','Tiêu đề không được để trống');valid=false;}
-  if(!content){showError('notifyContent','Nội dung không được để trống');valid=false;}
-  if(!valid)return;
-  NOTIF.add({type,title,message:content,icon:'bi-bell'});
-  showToast('Đã gửi thông báo!','success');
-  document.getElementById('notifyForm').reset();
-  const typeMap={promo:{cls:'cb-notify-promo',badge:'<span class="badge bg-warning text-dark">Khuyến mãi</span>'},confirm:{cls:'cb-notify-confirm',badge:'<span class="badge bg-success">Xác nhận</span>'},info:{cls:'cb-notify-info',badge:'<span class="badge bg-info text-dark">Thông tin</span>'}};
-  const t=typeMap[type]||typeMap.info;
-  const item=document.createElement('div');
-  item.className=`cb-notify-item ${t.cls}`;
-  item.innerHTML=`<div class="d-flex justify-content-between"><strong>${title}</strong>${t.badge}</div><p class="small text-muted mb-0 mt-1">${content}</p>`;
-  item.style.display='none';
-  document.getElementById('notifyHistory').prepend(item);
-  $(item).slideDown(300);
-}
-
-function clearNotifyHistory(){
-  document.getElementById('notifyHistory').innerHTML='<p class="text-muted small text-center py-3">Chưa có thông báo nào được gửi.</p>';
-}
-// ============================================================
-// COUPON MANAGEMENT – Admin
-// ============================================================
+// ===== COUPONS =====
 function loadCoupons() {
   var list = COUPONS.getAll();
   var total    = list.length;
-  var active   = list.filter(function(c){ return c.active; }).length;
-  var used     = list.reduce(function(s,c){ return s+(c.used||0); }, 0);
-  var inactive = total - active;
-  // Stats (YC1: DOM)
-  var el;
-  el = document.getElementById('cpn-total');    if(el) el.textContent = total;
-  el = document.getElementById('cpn-active');   if(el) el.textContent = active;
-  el = document.getElementById('cpn-used');     if(el) el.textContent = used;
-  el = document.getElementById('cpn-inactive'); if(el) el.textContent = inactive;
+  var active   = 0; var used = 0; var inactive = 0;
+  for (var i=0;i<list.length;i++) { // YC1: for
+    if (list[i].active) active++; else inactive++;
+    used += (list[i].used||0);
+  }
+  var ea = document.getElementById('cpn-total');    if(ea) ea.textContent=total;
+  var eb = document.getElementById('cpn-active');   if(eb) eb.textContent=active;
+  var ec = document.getElementById('cpn-used');     if(ec) ec.textContent=used;
+  var ed = document.getElementById('cpn-inactive'); if(ed) ed.textContent=inactive;
   renderCouponTable(list);
 }
 
@@ -634,23 +872,24 @@ function renderCouponTable(list) {
     return;
   }
   var html = '';
-  for (var i = 0; i < list.length; i++) {  // YC1: for loop
+  for (var i=0;i<list.length;i++) { // YC1: for loop
     var c = list[i];
     var discLabel = c.type==='percent' ? c.discount+'%' : formatPrice(c.discount);
     var minLabel  = c.minOrder ? formatPrice(c.minOrder) : 'Không giới hạn';
-    var useLabel  = (c.used||0) + ' / ' + (c.maxUse||'∞');
+    var useLabel  = (c.used||0)+' / '+(c.maxUse||'∞');
     html += '<tr>'
-      + '<td><code class="cb-coupon-code">' + c.code + '</code></td>'
-      + '<td class="text-muted small">' + (c.desc||'—') + '</td>'
-      + '<td><span class="badge ' + (c.type==='percent'?'bg-info text-dark':'cb-badge-amber') + '">' + discLabel + '</span></td>'
-      + '<td class="small">' + minLabel + '</td>'
-      + '<td class="small">' + useLabel + '</td>'
-      + '<td class="small text-muted">' + (c.createdAt||'—') + '</td>'
-      + '<td><span class="cb-status ' + (c.active?'cb-status-confirmed':'cb-status-cancelled') + '">' + (c.active?'Hoạt động':'Đã tắt') + '</span></td>'
-      + '<td class="text-nowrap">'
-      + '<button class="btn btn-sm ' + (c.active?'btn-outline-warning':'btn-outline-success') + ' me-1" onclick="toggleCoupon(\'' + c.code + '\')" title="' + (c.active?'Tắt':'Bật') + '"><i class="bi bi-' + (c.active?'pause':'play') + '-fill"></i></button>'
-      + '<button class="btn btn-sm btn-outline-danger" onclick="deleteCoupon(\'' + c.code + '\')" title="Xoá"><i class="bi bi-trash3"></i></button>'
-      + '</td></tr>';
+      +'<td><code class="cb-coupon-code">'+c.code+'</code></td>'
+      +'<td class="text-muted small">'+(c.desc||'—')+'</td>'
+      +'<td><span class="badge '+(c.type==='percent'?'bg-info text-dark':'cb-badge-amber')+'">'+discLabel+'</span></td>'
+      +'<td class="small">'+minLabel+'</td>'
+      +'<td class="small">'+useLabel+'</td>'
+      +'<td class="small text-muted">'+(c.createdAt||'—')+'</td>'
+      +'<td><span class="cb-status '+(c.active?'cb-status-confirmed':'cb-status-cancelled')+'">'+(c.active?'Hoạt động':'Đã tắt')+'</span></td>'
+      +'<td class="text-nowrap">'
+      +'<button class="btn btn-sm '+(c.active?'btn-outline-warning':'btn-outline-success')+' me-1" onclick="toggleCoupon(\''+c.code+'\')" title="'+(c.active?'Tắt':'Bật')+'">'
+      +'<i class="bi bi-'+(c.active?'pause':'play')+'-fill"></i></button>'
+      +'<button class="btn btn-sm btn-outline-danger" onclick="deleteCoupon(\''+c.code+'\')" title="Xoá"><i class="bi bi-trash3"></i></button>'
+      +'</td></tr>';
   }
   // YC4: jQuery .html()
   $('#couponTableBody').html(html);
@@ -671,27 +910,159 @@ function saveCoupon() {
   var minOrder = Number(document.getElementById('cpnMinOrder').value)||0;
   var maxUse   = Number(document.getElementById('cpnMaxUse').value)||0;
   var active   = document.getElementById('cpnActive').checked;
-  var valid = true;
-  if (!code||code.length<2)  { showError('cpnCode','Mã phải có ít nhất 2 ký tự'); valid=false; }
-  if (!discount||discount<=0){ showError('cpnDiscount','Giá trị giảm phải lớn hơn 0'); valid=false; }
-  if (type==='percent'&&discount>100){ showError('cpnDiscount','Phần trăm không thể quá 100%'); valid=false; }
+  var valid    = true;
+  if (!code||code.length<2)   { showError('cpnCode','Mã phải có ít nhất 2 ký tự'); valid=false; }
+  if (!discount||discount<=0) { showError('cpnDiscount','Giá trị giảm phải lớn hơn 0'); valid=false; }
+  if (type==='percent'&&discount>100) { showError('cpnDiscount','Phần trăm không thể quá 100%'); valid=false; }
   if (!valid) return;
   var result = COUPONS.add({ code:code, discount:discount, type:type, desc:desc, minOrder:minOrder, maxUse:maxUse||null, active:active });
-  if (!result.ok) { showError('cpnCode', result.msg); return; }
+  if (!result.ok) { showError('cpnCode',result.msg); return; }
   bootstrap.Modal.getInstance(document.getElementById('couponModal')).hide();
-  showToast('Tạo mã ' + code + ' thành công!', 'success');
+  document.getElementById('couponForm').reset(); // YC3
+  showToast('Tạo mã '+code+' thành công!','success');
   loadCoupons();
 }
 
 function toggleCoupon(code) {
   var isActive = COUPONS.toggle(code);
-  showToast('Mã ' + code + (isActive?' đã bật':' đã tắt'), 'success');
+  showToast('Mã '+code+(isActive?' đã bật':' đã tắt'),'success');
   loadCoupons();
 }
 
 function deleteCoupon(code) {
-  if (!confirm('Xoá mã "' + code + '"? Thao tác không thể hoàn tác.')) return;
+  if (!confirm('Xoá mã "'+code+'"? Thao tác không thể hoàn tác.')) return;
   COUPONS.remove(code);
-  showToast('Đã xoá mã ' + code, 'success');
+  showToast('Đã xoá mã '+code,'success');
   loadCoupons();
+}
+
+// ===== NOTIFICATIONS =====
+function handleNotifySubmit(e) {
+  e.preventDefault();
+  clearAllErrors(['notifyTitle','notifyContent']);
+  var title   = document.getElementById('notifyTitle').value.trim();
+  var content = document.getElementById('notifyContent').value.trim();
+  var type    = document.getElementById('notifyType').value;
+  var valid   = true;
+  if (!title)   { showError('notifyTitle','Tiêu đề không được để trống'); valid=false; }
+  if (!content) { showError('notifyContent','Nội dung không được để trống'); valid=false; }
+  if (!valid) return;
+  NOTIF.add({ type:type, title:title, message:content, icon:'bi-bell' });
+  showToast('Đã gửi thông báo!','success');
+  document.getElementById('notifyForm').reset(); // YC3
+  // YC4: jQuery .append() + .slideDown()
+  var tmap  = { promo:'<span class="badge bg-warning text-dark">Khuyến mãi</span>', confirm:'<span class="badge bg-success">Xác nhận</span>', info:'<span class="badge bg-info text-dark">Thông tin</span>' };
+  var cmap  = { promo:'cb-notify-promo', confirm:'cb-notify-confirm', info:'cb-notify-info' };
+  var item  = $('<div>').addClass('cb-notify-item '+(cmap[type]||'cb-notify-info'));
+  item.html('<div class="d-flex justify-content-between"><strong>'+title+'</strong>'+(tmap[type]||'')+'</div>'
+    +'<p class="small text-muted mb-0 mt-1">'+content+'</p>');
+  item.hide();
+  $('#notifyHistory').prepend(item);
+  item.slideDown(300); // YC4
+}
+
+function clearNotifyHistory() {
+  // YC4: jQuery .html()
+  $('#notifyHistory').html('<p class="text-muted small text-center py-3">Chưa có thông báo nào được gửi.</p>');
+}
+
+// ===== IMPORT DRINKS FROM API =====
+function openImportDrinksModal() {
+  var el = document.getElementById('importDrinksUrl');
+  if (el) el.value = '';
+  clearError('importDrinksUrl');
+  var res = document.getElementById('importDrinksResult');
+  if (res) res.innerHTML = '';
+  new bootstrap.Modal(document.getElementById('importDrinksModal')).show();
+}
+
+function importDrinksFromApi() {
+  var urlEl = document.getElementById('importDrinksUrl');
+  var url   = urlEl ? urlEl.value.trim() : '';
+  clearError('importDrinksUrl');
+
+  if (!url) { showError('importDrinksUrl', 'Vui lòng nhập URL API'); return; }
+  if (!isValidImageUrl(url)) { showError('importDrinksUrl', 'URL không hợp lệ'); return; }
+
+  // YC2: fetch + .then/.catch
+  $('#importDrinksText').hide();
+  $('#importDrinksSpinner').show();
+  $('#importDrinksBtn').prop('disabled', true);
+  document.getElementById('importDrinksResult').innerHTML = '';
+
+  fetch(url)
+    .then(function(res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    })
+    .then(function(data) {
+      if (!Array.isArray(data)) throw new Error('Dữ liệu phải là mảng JSON');
+
+      var valid = [];
+      for (var i = 0; i < data.length; i++) { // YC1: for loop
+        var d = data[i];
+        var name  = d.name || d.title || d.ten || '';
+        var price = Number(d.price || d.gia || 0);
+        var cat   = d.category || d.loai || 'Đồ uống';
+        var img   = d.image || d.imageUrl || d.hinh || '';
+        var desc  = d.description || d.moTa || '';
+        if (name && price > 0) valid.push({ name:name, price:price, category:cat, image:img, description:desc });
+      }
+
+      if (!valid.length) throw new Error('Không tìm thấy dữ liệu hợp lệ trong API');
+
+      var previewHtml = '<div class="alert alert-info py-2 small"><strong>' + valid.length + ' món</strong> sẽ được import.</div>'
+        + '<div style="max-height:180px;overflow-y:auto">';
+      for (var j = 0; j < valid.length; j++) { // YC1: for loop
+        previewHtml += '<div class="d-flex align-items-center gap-2 py-1 border-bottom small">'
+          + '<i class="bi bi-cup-hot cb-text-green"></i>'
+          + '<span class="fw-500">' + valid[j].name + '</span>'
+          + '<span class="text-muted ms-auto">' + formatPrice(valid[j].price) + '</span>'
+          + '</div>';
+      }
+      previewHtml += '</div>'
+        + '<div class="mt-2 text-end">'
+        + '<button class="btn cb-btn-primary btn-sm" onclick="confirmImportDrinks(' + JSON.stringify(valid).replace(/"/g,'&quot;') + ')">'
+        + '<i class="bi bi-cloud-download me-1"></i>Xác nhận import ' + valid.length + ' món</button>'
+        + '</div>';
+
+      document.getElementById('importDrinksResult').innerHTML = previewHtml;
+    })
+    .catch(function(err) {
+      document.getElementById('importDrinksResult').innerHTML =
+        '<div class="alert alert-danger py-2 small">Lỗi: ' + err.message + '</div>';
+    })
+    .finally(function() {
+      $('#importDrinksText').show();
+      $('#importDrinksSpinner').hide();
+      $('#importDrinksBtn').prop('disabled', false);
+    });
+}
+
+function confirmImportDrinks(items) {
+  if (!items || !items.length) return;
+  var done  = 0;
+  var total = items.length;
+  var failed = 0;
+
+  // Post all drinks sequentially using reduce + Promise chain
+  var chain = Promise.resolve();
+  for (var i = 0; i < items.length; i++) { // YC1: for loop
+    (function(item) {
+      chain = chain.then(function() {
+        return createDrink(item)
+          .then(function() { done++; })
+          .catch(function() { failed++; });
+      });
+    })(items[i]);
+  }
+
+  chain.then(function() {
+    var msg = 'Import xong: ' + done + '/' + total + ' món thành công';
+    if (failed) msg += ', ' + failed + ' thất bại';
+    bootstrap.Modal.getInstance(document.getElementById('importDrinksModal')).hide();
+    showToast(msg, done > 0 ? 'success' : 'error');
+    loadAdminDrinks();
+    loadDashboard();
+  });
 }

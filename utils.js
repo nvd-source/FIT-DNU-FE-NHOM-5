@@ -112,6 +112,17 @@ function debounce(fn, delay) {
   };
 }
 
+// ---- Xử lý lỗi ảnh QR: KHÔNG thay bằng QR tự sinh giả, chỉ cảnh báo ----
+function handleQrImgError(img) {
+  img.onerror = null;
+  img.style.display = 'none';
+  if (img.nextElementSibling && img.nextElementSibling.classList && img.nextElementSibling.classList.contains('cb-qr-error-msg')) return;
+  var warn = document.createElement('div');
+  warn.className = 'cb-qr-error-msg small text-danger text-center mt-2';
+  warn.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i>Không tải được ảnh QR chuyển khoản. Vui lòng thanh toán tiền mặt hoặc liên hệ quầy thu ngân.';
+  img.parentNode.insertBefore(warn, img.nextSibling);
+}
+
 // ---- Toggle password ----
 function togglePwd() {
   var inp = document.getElementById('loginPassword');
@@ -183,7 +194,7 @@ var USERS = {
   key: 'cbRegisteredUsers',
   // Tài khoản admin mặc định (không lưu localStorage)
   defaults: [
-    { id:'admin-001', username:'admin', password:'admin123', role:'admin', name:'Quản trị viên', email:'admin@cafebook.vn', std:'', createdAt:'' }
+    { id:'admin-001', username:'ADMIN', password:'123456', role:'admin', name:'Quản trị viên', email:'admin@cafebook.vn', std:'', createdAt:'' }
   ],
   getAll: function() {
     try { return JSON.parse(localStorage.getItem(this.key)) || []; } catch(e) { return []; }
@@ -214,20 +225,94 @@ var USERS = {
     this.saveAll(list);
     return { ok: true, user: newUser };
   },
-  // Đăng nhập
+  // Đăng nhập (không phân biệt hoa/thường với username/email/mã SV)
   login: function(usernameOrEmail, password) {
+    var key = (usernameOrEmail || '').trim().toLowerCase();
     // Kiểm tra admin mặc định
     for (var i = 0; i < this.defaults.length; i++) {
       var d = this.defaults[i];
-      if ((d.username === usernameOrEmail || d.email === usernameOrEmail) && d.password === password) return d;
+      if (((d.username||'').toLowerCase() === key || (d.email||'').toLowerCase() === key) && d.password === password) return d;
     }
     // Kiểm tra user đã đăng ký
     var list = this.getAll();
     for (var j = 0; j < list.length; j++) {
       var u = list[j];
-      if ((u.username === usernameOrEmail || u.email === usernameOrEmail || (u.std && u.std === usernameOrEmail)) && u.password === password) return u;
+      if (((u.username||'').toLowerCase() === key || (u.email||'').toLowerCase() === key || (u.std && u.std.toLowerCase() === key)) && u.password === password) return u;
     }
     return null;
+  },
+  // Cấp lại mật khẩu cho 1 user theo id (dùng cho luồng "Quên mật khẩu")
+  resetPassword: function(userId, newPassword) {
+    var list = this.getAll();
+    var u = list.find(function(x){ return x.id === userId; });
+    if (!u) return false;
+    u.password = newPassword;
+    this.saveAll(list);
+    return true;
+  },
+  // Tìm user theo username/email/mã SV (không phân biệt hoa thường)
+  findByIdentifier: function(identifier) {
+    var key = (identifier || '').trim().toLowerCase();
+    var list = this.getAll();
+    return list.find(function(u) {
+      return (u.username||'').toLowerCase() === key || (u.email||'').toLowerCase() === key || (u.std && u.std.toLowerCase() === key);
+    }) || null;
+  }
+};
+
+// ---- Kiểm tra email Gmail ----
+function isGmailAddress(email) {
+  return /^[^\s@]+@gmail\.com$/i.test((email||'').trim());
+}
+
+// ============================================================
+// PASSWORD RESET REQUESTS – Khách gửi yêu cầu, Admin xác minh & cấp lại
+// ============================================================
+var RESETREQ = {
+  key: 'cbPasswordResets',
+  getAll: function() {
+    try { return JSON.parse(localStorage.getItem(this.key)) || []; } catch(e) { return []; }
+  },
+  saveAll: function(list) { localStorage.setItem(this.key, JSON.stringify(list)); },
+  // Khách gửi yêu cầu quên mật khẩu
+  create: function(identifier, phone, note) {
+    var user = USERS.findByIdentifier(identifier);
+    if (!user) return { ok:false, msg:'Không tìm thấy tài khoản với thông tin này.' };
+    var list = this.getAll();
+    var req = {
+      id: genId(),
+      userId: user.id,
+      identifier: identifier,
+      name: user.name,
+      phone: phone || '',
+      note: note || '',
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    };
+    list.unshift(req);
+    this.saveAll(list);
+    return { ok:true, request:req };
+  },
+  getPending: function() {
+    return this.getAll().filter(function(r){ return r.status === 'pending'; });
+  },
+  // Admin xác minh & cấp mật khẩu mới ngẫu nhiên
+  approve: function(requestId) {
+    var list = this.getAll();
+    var req = list.find(function(x){ return x.id === requestId; });
+    if (!req) return { ok:false, msg:'Yêu cầu không tồn tại' };
+    var newPass = genId().substr(0, 6);
+    var ok = USERS.resetPassword(req.userId, newPass);
+    if (!ok) return { ok:false, msg:'Không tìm thấy tài khoản để cấp lại mật khẩu' };
+    req.status = 'done';
+    req.resolvedAt = new Date().toISOString();
+    this.saveAll(list);
+    return { ok:true, newPassword:newPass, req:req };
+  },
+  reject: function(requestId) {
+    var list = this.getAll();
+    var req = list.find(function(x){ return x.id === requestId; });
+    if (req) { req.status = 'rejected'; this.saveAll(list); }
   }
 };
 

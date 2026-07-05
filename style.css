@@ -706,33 +706,61 @@ a { text-decoration:none; }
 .cb-pay-active .cb-pay-check{opacity:1}
 
 /* ══════════════════════════════════════════════════════════
-   QR PAYMENT BOX
+   QR PAYMENT BOX – Hoàn chỉnh
 ══════════════════════════════════════════════════════════ */
 .cb-qr-box{
-  border-radius:var(--radius-sm);
-  overflow:hidden;
+  border-radius:var(--radius);overflow:hidden;
   border:1.5px solid var(--green-light);
-  background:linear-gradient(145deg,var(--green-xpale) 0%,#fff 100%);
+  background:linear-gradient(135deg,#f0faf2 0%,#e8f5e9 100%);
   animation:fadeSlideIn .3s ease;
 }
-@keyframes fadeSlideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-.cb-qr-inner{padding:16px}
-.cb-qr-img-wrap{
-  display:inline-block;position:relative;
-  border-radius:var(--radius-sm);overflow:hidden;
-  box-shadow:0 4px 16px rgba(26,61,47,.15);
-  border:3px solid #fff;
+@keyframes fadeSlideIn{
+  from{opacity:0;transform:translateY(-8px)}
+  to{opacity:1;transform:translateY(0)}
 }
-.cb-qr-img{
-  width:170px;height:170px;object-fit:contain;display:block;
+.cb-qr-inner{padding:14px 16px}
+.cb-qr-title{font-weight:700;font-size:.85rem;color:var(--green-dark);letter-spacing:.3px}
+/* QR Layout: ảnh bên trái, thông tin bên phải */
+.cb-qr-layout{
+  display:flex;align-items:flex-start;gap:14px;margin-top:10px;
+}
+.cb-qr-img-wrap{
+  position:relative;flex-shrink:0;
+  width:120px;height:120px;
+  border-radius:var(--radius-sm);overflow:hidden;
+  border:3px solid var(--green-main);
+  box-shadow:0 4px 12px rgba(45,106,79,.2);
   background:#fff;
 }
-.cb-qr-bank-info{
-  background:rgba(255,255,255,.8);border-radius:var(--radius-xs);
-  padding:8px 12px;border:1px solid var(--border);
+.cb-qr-img{width:100%;height:100%;object-fit:contain;display:block;background:#fff}
+.cb-qr-scan-line{
+  position:absolute;top:0;left:0;right:0;height:2.5px;
+  background:rgba(45,106,79,.65);
+  animation:scanLine 2s ease-in-out infinite;
 }
-.cb-qr-bank-info p{color:var(--text-mid)!important;font-size:.8rem}
-.cb-qr-bank-info strong{color:var(--green-dark)}
+@keyframes scanLine{0%{top:0%}50%{top:93%}100%{top:0%}}
+/* Bank info panel */
+.cb-qr-bank-info{flex:1;display:flex;flex-direction:column;gap:5px}
+.cb-qr-bank-row{display:flex;align-items:flex-start;gap:8px;font-size:.78rem}
+.cb-qr-bank-row>i{color:var(--green-main);font-size:.88rem;margin-top:1px;flex-shrink:0}
+.cb-qr-bank-row>div{display:flex;flex-direction:column}
+.cb-qr-lbl{color:var(--text-light);font-size:.7rem;line-height:1.2}
+.cb-qr-val{color:var(--text-dark);font-weight:500;font-size:.79rem;line-height:1.3}
+.cb-qr-amount-row{background:rgba(45,106,79,.07);border-radius:5px;padding:3px 6px}
+.cb-qr-note{
+  margin-top:10px;font-size:.74rem;color:var(--text-mid);
+  background:rgba(45,106,79,.06);border-radius:6px;padding:7px 10px;
+}
+/* QR confirm in success modal */
+.cb-qr-confirm-box{
+  background:var(--green-xpale);border:1.5px solid var(--green-light);
+  border-radius:var(--radius-sm);padding:14px;text-align:center;
+}
+.cb-qr-confirm-img{
+  width:130px;height:130px;object-fit:contain;
+  border-radius:var(--radius-sm);border:3px solid var(--green-main);
+  background:#fff;display:inline-block;
+}
 
 /* ══════════════════════════════════════════════════════════
    LOGIN MODAL TABS IMPROVEMENT
@@ -1087,77 +1115,6 @@ a { text-decoration:none; }
   font-size: .85rem; font-weight: 700; letter-spacing: .5px;
 }
 
-/* ── QR PAYMENT COMPLETE ────────────────────────────────── */
-.cb-qr-box {
-  background: linear-gradient(135deg, #f0faf2 0%, #e8f5e9 100%);
-  border: 1.5px solid var(--green-light);
-  border-radius: var(--radius);
-  overflow: hidden;
-  animation: fadeSlideIn .3s ease;
-}
-@keyframes fadeSlideIn {
-  from { opacity: 0; transform: translateY(-8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.cb-qr-title {
-  font-weight: 700; font-size: .85rem;
-  color: var(--green-dark); letter-spacing: .3px;
-}
-.cb-qr-inner { padding: 14px 16px; }
-.cb-qr-layout {
-  display: flex; align-items: flex-start; gap: 14px;
-  margin-top: 10px;
-}
-.cb-qr-img-wrap {
-  position: relative; flex-shrink: 0;
-  width: 110px; height: 110px;
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  border: 3px solid var(--green-main);
-  box-shadow: 0 4px 12px rgba(45,106,79,.2);
-}
-.cb-qr-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.cb-qr-scan-line {
-  position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: rgba(45,106,79,.7);
-  animation: scanLine 2s ease-in-out infinite;
-}
-@keyframes scanLine {
-  0%   { top: 0%; }
-  50%  { top: 95%; }
-  100% { top: 0%; }
-}
-.cb-qr-bank-info { flex: 1; display: flex; flex-direction: column; gap: 6px; }
-.cb-qr-bank-row {
-  display: flex; align-items: flex-start; gap: 8px;
-  font-size: .78rem;
-}
-.cb-qr-bank-row > i {
-  color: var(--green-main); font-size: .9rem;
-  margin-top: 1px; flex-shrink: 0;
-}
-.cb-qr-bank-row > div { display: flex; flex-direction: column; }
-.cb-qr-lbl { color: var(--text-light); font-size: .72rem; }
-.cb-qr-val { color: var(--text-dark); font-weight: 500; font-size: .8rem; }
-.cb-qr-amount-row { background: rgba(45,106,79,.06); border-radius: 6px; padding: 4px 6px; }
-.cb-qr-note {
-  margin-top: 10px; font-size: .74rem; color: var(--text-mid);
-  background: rgba(45,106,79,.06); border-radius: 6px;
-  padding: 7px 10px;
-}
-
-/* QR Confirm box in success modal */
-.cb-qr-confirm-box {
-  background: var(--green-xpale);
-  border: 1.5px solid var(--green-light);
-  border-radius: var(--radius-sm); padding: 14px;
-}
-.cb-qr-confirm-img {
-  width: 120px; height: 120px; object-fit: cover;
-  border-radius: var(--radius-sm);
-  border: 3px solid var(--green-main);
-}
-
 /* ── ENHANCED ANIMATIONS ────────────────────────────────── */
 /* Card hover lift */
 .cb-drink-card, .cb-table-card, .cb-admin-card, .cb-stat-card {
@@ -1240,3 +1197,410 @@ code.cb-coupon-code {
   .cb-qr-img-wrap { width: 140px; height: 140px; }
   .cb-qr-bank-info { width: 100%; }
 }
+
+/* ============================================================
+   COMPLETION STYLES – Admin Overlay, Animations, Full Responsive
+   ============================================================ */
+
+/* ── ADMIN SIDEBAR OVERLAY (click-outside to close) ──── */
+.cb-admin-overlay{
+  display:none;
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.45);
+  z-index:99;
+  backdrop-filter:blur(2px);
+  transition:opacity .3s;
+}
+.cb-admin-overlay.active{display:block;animation:overlayIn .25s ease}
+@keyframes overlayIn{from{opacity:0}to{opacity:1}}
+
+/* Show sidebar always on desktop */
+@media(min-width:992px){
+  .cb-admin-sidebar{transform:none!important}
+  .cb-admin-overlay{display:none!important}
+}
+
+/* ── CARD FADE-IN ANIMATION ─────────────────────────── */
+.cb-fade-in{animation:cardFadeIn .4s ease both}
+@keyframes cardFadeIn{
+  from{opacity:0;transform:translateY(16px)}
+  to  {opacity:1;transform:translateY(0)}
+}
+/* Stagger delay for grid cards */
+.cb-fade-in:nth-child(1){animation-delay:.04s}
+.cb-fade-in:nth-child(2){animation-delay:.08s}
+.cb-fade-in:nth-child(3){animation-delay:.12s}
+.cb-fade-in:nth-child(4){animation-delay:.16s}
+.cb-fade-in:nth-child(5){animation-delay:.20s}
+.cb-fade-in:nth-child(6){animation-delay:.24s}
+.cb-fade-in:nth-child(7){animation-delay:.28s}
+.cb-fade-in:nth-child(8){animation-delay:.32s}
+
+/* ── RECEIPT TOTAL ANIMATED ─────────────────────────── */
+#receiptGrandTotal{transition:color .2s,transform .2s}
+.cb-price-update{animation:priceFlash .35s ease}
+@keyframes priceFlash{
+  0%  {transform:scale(1.12);color:var(--amber)}
+  100%{transform:scale(1);color:var(--green-main)}
+}
+
+/* ── TABLE CARD HOVER GLOW ──────────────────────────── */
+.cb-table-card.status-available:hover{
+  box-shadow:0 0 0 3px rgba(45,106,79,.18),var(--shadow-md);
+}
+
+/* ── DRINK CARD SKELETON IMPROVEMENT ───────────────── */
+@keyframes shimmer{
+  0%  {background-position:200% 0}
+  100%{background-position:-200% 0}
+}
+.cb-card-skeleton,.cb-skel-img,.cb-skel-line{will-change:background-position}
+
+/* ── NAV LINK UNDERLINE INDICATOR ───────────────────── */
+.cb-nav-link{position:relative}
+.cb-nav-link.active::after{
+  content:'';position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);
+  width:20px;height:2px;border-radius:2px;background:var(--green-light);
+}
+
+/* ── BOOKING FORM FOCUS RING ─────────────────────────── */
+.cb-input:focus{outline:none}
+
+/* ── QR IMAGE OBJECT-FIT ────────────────────────────── */
+.cb-qr-img{object-fit:contain;background:#fff}
+.cb-qr-confirm-img{object-fit:contain;background:#fff}
+
+/* ── SOCIAL BUTTONS IN FOOTER ───────────────────────── */
+.cb-social-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);
+  font-size:1rem;transition:var(--transition);
+  text-decoration:none;
+}
+.cb-social-btn:hover{background:var(--green-main);color:#fff;transform:translateY(-2px)}
+
+/* ── ADMIN TOPBAR MENU BUTTON (desktop toggle) ───────── */
+.cb-sidebar-toggle{
+  border:none;background:none;padding:4px 8px;
+  color:var(--text-mid);border-radius:var(--radius-xs);
+  transition:var(--transition);cursor:pointer;
+}
+.cb-sidebar-toggle:hover{background:var(--cream);color:var(--green-main)}
+
+/* ── ORDER TYPE ACTIVE STATE ─────────────────────────── */
+.cb-order-type-btn{
+  position:relative;overflow:hidden;
+}
+.cb-order-type-btn::after{
+  content:'';position:absolute;inset:0;
+  background:rgba(255,255,255,.08);
+  transform:scaleX(0);transform-origin:left;
+  transition:transform .2s ease;
+}
+.cb-order-type-btn:hover::after{transform:scaleX(1)}
+.cb-order-type-btn.active::after{display:none}
+
+/* ── COUPON INPUT GROUP FIX ──────────────────────────── */
+.cb-coupon-wrap .input-group .cb-input{
+  border-radius:var(--radius-sm) 0 0 var(--radius-sm)!important;
+}
+
+/* ── RECEIPT DISCOUNT ROW ────────────────────────────── */
+#receiptDiscountRow{
+  transition:all .25s ease;
+}
+
+/* ── TOAST IMPROVED ──────────────────────────────────── */
+.cb-toast{
+  animation:toastSlideIn .3s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes toastSlideIn{
+  from{transform:translateX(100%);opacity:0}
+  to  {transform:translateX(0);opacity:1}
+}
+
+/* ── MODAL BACKDROP BLUR ─────────────────────────────── */
+.modal-backdrop{backdrop-filter:blur(3px)}
+
+/* ═══════════════════════════════════════════════════════════
+   FULL RESPONSIVE — Mobile (<576px) / Tablet (576-991px) / Desktop (≥992px)
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── MOBILE < 576px ──────────────────────────────────── */
+@media(max-width:575px){
+  /* Navbar */
+  .cb-navbar .container{padding:0 12px}
+  .cb-brand{font-size:1.2rem}
+  .cb-btn-cart{width:36px;height:36px}
+
+  /* Hero */
+  .cb-hero{padding:40px 0 70px}
+  .cb-hero-title{font-size:1.7rem}
+  .cb-hero-sub{font-size:.88rem}
+  .cb-hero-pills{gap:6px}
+  .cb-pill{font-size:.73rem;padding:4px 10px}
+  .cb-hero-img-wrap{width:200px;height:200px;margin-top:20px}
+  .cb-hero-icon{font-size:4.5rem}
+  .cb-hero-stats{
+    padding:10px 12px;gap:10px;bottom:-14px;
+    font-size:.8rem;
+  }
+  .cb-stat-num{font-size:.95rem}
+  .cb-btn-primary,.cb-btn-outline-dark{font-size:.85rem;padding:.5rem 1.2rem}
+
+  /* Sections */
+  .cb-section-title{font-size:1.5rem}
+  .cb-section-tag{font-size:.72rem}
+
+  /* Menu cards */
+  .cb-drink-img{height:130px}
+  .cb-drink-name{font-size:.88rem}
+  .cb-drink-price{font-size:.9rem}
+  .cb-drink-add{width:28px;height:28px;font-size:.95rem}
+
+  /* Filter buttons */
+  .cb-filter-btn{font-size:.78rem;padding:.35rem .8rem}
+  .cb-filter-sm{font-size:.72rem!important;padding:.25rem .6rem!important}
+
+  /* Order section */
+  .cb-order-type-tabs{border-radius:var(--radius-sm)}
+  .cb-order-type-btn{font-size:.72rem;padding:10px 4px;gap:4px}
+  .cb-order-type-btn i{font-size:1.1rem}
+  .cb-receipt-card{position:relative!important;top:auto!important}
+  .cb-receipt-items{max-height:200px}
+  .cb-order-menu-list{max-height:300px}
+
+  /* QR Box */
+  .cb-qr-layout{flex-direction:column;align-items:center}
+  .cb-qr-img-wrap{width:150px;height:150px}
+  .cb-qr-bank-info{width:100%}
+
+  /* Payment options */
+  .cb-payment-methods{gap:8px}
+  .cb-payment-option{padding:10px 12px}
+
+  /* Tables */
+  .cb-table-card{padding:12px 10px}
+  .cb-table-icon{font-size:1.6rem}
+  .cb-table-name{font-size:.82rem}
+  .cb-table-cap{font-size:.68rem}
+
+  /* Cart sidebar */
+  .cb-sidebar{width:100%;right:-100%}
+
+  /* Modals */
+  .modal-dialog{margin:10px}
+  .cb-auth-modal .cb-auth-body{padding:12px 14px 16px}
+  .cb-auth-header{padding:20px 16px 16px}
+
+  /* Admin */
+  .cb-admin-main{margin-left:0}
+  .cb-page{padding:14px}
+  .cb-admin-card{padding:14px}
+  .cb-stat-num{font-size:1.6rem}
+
+  /* Footer */
+  .cb-footer{text-align:center}
+  .cb-social-btn{width:40px;height:40px;font-size:1.1rem}
+  #backToTop{bottom:18px;right:18px;width:38px;height:38px;font-size:1rem}
+
+  /* Table responsive */
+  .table-responsive{font-size:.78rem}
+  .cb-admin-thumb{width:38px;height:38px}
+}
+
+/* ── TABLET 576-991px ────────────────────────────────── */
+@media(min-width:576px) and (max-width:991px){
+  /* Hero */
+  .cb-hero{padding:60px 0 80px}
+  .cb-hero-title{font-size:2.2rem}
+  .cb-hero-img-wrap{width:260px;height:260px}
+  .cb-hero-stats{padding:12px 16px;gap:14px}
+
+  /* Sidebar cart */
+  .cb-sidebar{width:340px}
+
+  /* Receipt */
+  .cb-receipt-card{position:relative!important;top:auto!important}
+
+  /* Order */
+  .cb-order-menu-list{max-height:320px}
+
+  /* Admin */
+  .cb-admin-main{margin-left:0}
+  .cb-page{padding:18px}
+  .cb-stat-num{font-size:1.8rem}
+
+  /* Tables grid */
+  #tablesGrid .col-6{width:50%}
+
+  /* Pagination */
+  .pagination{flex-wrap:wrap}
+}
+
+/* ── DESKTOP ≥992px ──────────────────────────────────── */
+@media(min-width:992px){
+  /* Admin sidebar always visible */
+  .cb-admin-sidebar{transform:none!important;box-shadow:3px 0 16px rgba(0,0,0,.12)}
+  .cb-admin-main{margin-left:240px}
+  .cb-sidebar-toggle{display:none!important}
+
+  /* Receipt sticky */
+  .cb-receipt-card{position:sticky;top:80px;max-height:calc(100vh - 100px);overflow-y:auto}
+
+  /* Order menu scroll */
+  .cb-order-menu-list{max-height:420px}
+
+  /* Hero full */
+  .cb-hero{padding:80px 0 60px}
+}
+
+/* ── LARGE DESKTOP ≥1200px ───────────────────────────── */
+@media(min-width:1200px){
+  .cb-hero-title{font-size:3rem}
+  .cb-hero-img-wrap{width:340px;height:340px}
+  .cb-order-menu-list{max-height:480px}
+}
+
+/* ── PRINT ───────────────────────────────────────────── */
+@media print{
+  .cb-navbar,.cb-sidebar,.cb-overlay,#backToTop,.cb-btn-cart,#cartBtn,#loginBtn{display:none!important}
+  .cb-hero{padding:20px 0}
+  body{background:#fff}
+}
+
+/* ── TOUCH DEVICE IMPROVEMENTS ───────────────────────── */
+@media(hover:none){
+  .cb-drink-card:hover{transform:none}
+  .cb-btn-primary:hover{transform:none}
+  .cb-drink-add:hover{transform:none}
+  /* Larger tap targets on touch */
+  .cb-drink-add{width:38px;height:38px}
+  .cb-qty-sm{width:30px;height:30px}
+  .cb-qty-btn{width:42px;height:42px}
+  .nav-link,.cb-admin-nav-item{min-height:44px}
+}
+
+/* ── FOCUS VISIBLE ACCESSIBILITY ─────────────────────── */
+:focus-visible{
+  outline:2px solid var(--green-mid);
+  outline-offset:2px;
+  border-radius:4px;
+}
+button:focus-visible,a:focus-visible{outline:2px solid var(--green-mid);outline-offset:3px}
+.cb-input:focus-visible{outline:none}
+
+/* ── SMOOTH SCROLL PADDING ───────────────────────────── */
+html{scroll-padding-top:70px}
+
+/* ── IMAGE LOADING PLACEHOLDER ───────────────────────── */
+img[loading="lazy"]{background:var(--cream)}
+/* ══════════════════════════════════════════════════════════
+   VISUAL IMPROVEMENTS – Smooth, Lively UI
+══════════════════════════════════════════════════════════ */
+
+/* ── Coupon field ─────────────────────────────────────── */
+.cb-coupon-wrap .input-group .form-control{
+  border-radius:var(--radius-sm) 0 0 var(--radius-sm)!important;
+}
+.cb-coupon-success{
+  margin-top:5px;padding:6px 10px;font-size:.8rem;font-weight:500;
+  background:var(--green-pale);color:var(--green-dark);
+  border-radius:var(--radius-xs);border-left:3px solid var(--green-main);
+  animation:fadeSlideIn .25s ease;
+}
+
+/* ── Receipt discount row animation ──────────────────── */
+#receiptDiscountRow{transition:all .25s ease}
+#receiptGrandTotal{transition:all .2s}
+
+/* ── Drink card image hover zoom ─────────────────────── */
+.cb-drink-img{transition:transform .4s ease}
+.cb-drink-card:hover .cb-drink-img{transform:scale(1.06)}
+
+/* ── Navbar active underline ─────────────────────────── */
+.cb-nav-link{position:relative;overflow:hidden}
+.cb-nav-link::after{
+  content:'';position:absolute;bottom:0;left:50%;
+  width:0;height:2px;background:var(--green-light);
+  transition:all .25s ease;transform:translateX(-50%);
+}
+.cb-nav-link.active::after,.cb-nav-link:hover::after{width:60%}
+
+/* ── Booking table card selected glow ────────────────── */
+.cb-table-card.selected{
+  box-shadow:0 0 0 3px rgba(45,106,79,.2),var(--shadow-md)!important;
+}
+
+/* ── Stat card number count animation ────────────────── */
+.cb-stat-num{
+  display:inline-block;
+  animation:countUp .5s ease;
+}
+@keyframes countUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Admin nav item hover indicator ─────────────────── */
+.cb-admin-nav-item{position:relative}
+.cb-admin-nav-item::before{
+  content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:3px;height:0;background:var(--green-light);border-radius:0 3px 3px 0;
+  transition:height .2s ease;
+}
+.cb-admin-nav-item:hover::before,.cb-admin-nav-item.active::before{height:60%}
+
+/* ── Order type tab icon bounce ──────────────────────── */
+.cb-order-type-btn.active i{animation:iconBounce .3s ease}
+@keyframes iconBounce{
+  0%{transform:scale(1)}
+  40%{transform:scale(1.25)}
+  100%{transform:scale(1)}
+}
+
+/* ── Smooth skeleton ─────────────────────────────────── */
+.cb-card-skeleton,.cb-skel-img,.cb-skel-line{
+  background:linear-gradient(90deg,#f0f4f0 25%,#e4ece4 50%,#f0f4f0 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.4s ease infinite;
+}
+
+/* ── Back to top button ───────────────────────────────── */
+#backToTop{
+  position:fixed;bottom:24px;right:24px;z-index:900;
+  width:42px;height:42px;border-radius:50%;
+  background:var(--green-main);color:#fff;border:none;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;cursor:pointer;
+  box-shadow:0 4px 16px rgba(45,106,79,.35);
+  opacity:0;pointer-events:none;
+  transition:opacity .3s,transform .3s;transform:translateY(10px);
+}
+#backToTop.show{opacity:1;pointer-events:all;transform:translateY(0)}
+#backToTop:hover{background:var(--green-dark);transform:translateY(-2px)!important}
+
+/* ── Toast slide-in ──────────────────────────────────── */
+.cb-toast{animation:toastIn .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes toastIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ── Success modal icon ───────────────────────────────── */
+.cb-success-icon{animation:popIn .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* ── Page fade in for admin ───────────────────────────── */
+.cb-page{animation:pageIn .22s ease}
+@keyframes pageIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Card entry animation ─────────────────────────────── */
+.cb-fade-in{animation:cardIn .38s ease both}
+@keyframes cardIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.col-6:nth-child(1) .cb-fade-in,.col-6:nth-child(1).cb-fade-in{animation-delay:.05s}
+.col-6:nth-child(2) .cb-fade-in,.col-6:nth-child(2).cb-fade-in{animation-delay:.10s}
+.col-6:nth-child(3) .cb-fade-in,.col-6:nth-child(3).cb-fade-in{animation-delay:.15s}
+.col-6:nth-child(4) .cb-fade-in,.col-6:nth-child(4).cb-fade-in{animation-delay:.20s}
+.col-6:nth-child(5) .cb-fade-in,.col-6:nth-child(5).cb-fade-in{animation-delay:.25s}
+.col-6:nth-child(6) .cb-fade-in,.col-6:nth-child(6).cb-fade-in{animation-delay:.30s}
+.col-6:nth-child(7) .cb-fade-in,.col-6:nth-child(7).cb-fade-in{animation-delay:.35s}
+.col-6:nth-child(8) .cb-fade-in,.col-6:nth-child(8).cb-fade-in{animation-delay:.40s}
+
+/* ── Progress bar fill animation ─────────────────────── */
+.cb-progress-fill{transition:width .6s cubic-bezier(.4,0,.2,1)}
