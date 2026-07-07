@@ -223,7 +223,10 @@
                     <!-- Mã giảm giá -->
           <div class="cb-coupon-wrap mb-2" id="couponWrap">
             <label class="form-label cb-label"><i class="bi bi-tag me-1 cb-text-green"></i>Mã giảm giá</label>
-            <div class="input-group input-group-sm">
+            <div class="cb-coupon-login-hint d-none" id="couponLoginHint">
+              <i class="bi bi-lock me-1"></i>Vui lòng <a href="#" onclick="openLoginModal();return false;">đăng nhập</a> tài khoản khách để dùng mã giảm giá
+            </div>
+            <div class="input-group input-group-sm" id="couponInputGroup">
               <input type="text" class="form-control cb-input" id="couponInput" placeholder="Nhập mã (VD: CAFEBOOK20)" style="text-transform:uppercase"/>
               <button class="btn cb-btn-coupon" type="button" onclick="applyCoupon()"><i class="bi bi-check2 me-1"></i>Áp dụng</button>
               <button class="btn cb-btn-coupon-remove d-none" type="button" id="removeCouponBtn" onclick="removeCoupon()"><i class="bi bi-x-lg"></i></button>
@@ -500,10 +503,10 @@
             </div>
             <form id="loginForm" novalidate>
               <div class="mb-3">
-                <label class="form-label cb-label" id="loginUserLabel">Tên đăng nhập / Email / Mã SV</label>
+                <label class="form-label cb-label" id="loginUserLabel">Tên đăng nhập / Email / Số điện thoại</label>
                 <div class="input-group">
                   <span class="input-group-text cb-ig-text"><i class="bi bi-person" id="loginUserIcon"></i></span>
-                  <input type="text" class="form-control cb-input" id="loginUsername" placeholder="email@example.com hoặc mã SV" autocomplete="username"/>
+                  <input type="text" class="form-control cb-input" id="loginUsername" placeholder="email@example.com hoặc SĐT" autocomplete="username"/>
                 </div>
                 <div class="cb-error-msg" id="err-loginUsername"></div>
               </div>
@@ -527,38 +530,34 @@
             </div>
             <div id="guestLoginLinks" class="text-center mt-3">
               <small class="text-muted">Chưa có tài khoản? <a href="#" onclick="showAuthMode('register');return false;">Đăng ký ngay</a></small>
-              <br/>
-              <small class="text-muted"><a href="#" onclick="openForgotPassword();return false;">Quên mật khẩu?</a></small>
             </div>
           </div>
 
           <!-- === ĐĂNG KÝ === -->
           <div id="registerFormWrap" class="d-none">
             <div class="cb-login-hint cb-login-hint-guest mb-3">
-              <i class="bi bi-info-circle me-2"></i>Cần <strong>Họ tên</strong> và ít nhất <strong>Gmail</strong> hoặc <strong>Mã số SV</strong> để tạo tài khoản.
+              <i class="bi bi-info-circle me-2"></i>Vui lòng nhập đầy đủ <strong>Họ tên</strong>, <strong>Tên tài khoản</strong>, <strong>Email</strong> và <strong>Số điện thoại</strong> để tạo tài khoản.
             </div>
             <form id="registerForm" novalidate>
-              <div class="row g-2 mb-3">
-                <div class="col-6">
-                  <label class="form-label cb-label">Họ tên <span class="text-danger">*</span></label>
-                  <input type="text" class="form-control cb-input" id="regName" placeholder="Nguyễn Văn A"/>
-                  <div class="cb-error-msg" id="err-regName"></div>
-                </div>
-                <div class="col-6">
-                  <label class="form-label cb-label">Mã số SV</label>
-                  <input type="text" class="form-control cb-input" id="regStd" placeholder="19710700XX"/>
-                  <div class="cb-error-msg" id="err-regStd"></div>
-                </div>
+              <div class="mb-3">
+                <label class="form-label cb-label">Họ tên <span class="text-danger">*</span></label>
+                <input type="text" class="form-control cb-input" id="regName" placeholder="Nguyễn Văn A"/>
+                <div class="cb-error-msg" id="err-regName"></div>
               </div>
               <div class="mb-3">
-                <label class="form-label cb-label">Gmail</label>
+                <label class="form-label cb-label">Tên tài khoản <span class="text-danger">*</span></label>
+                <input type="text" class="form-control cb-input" id="regUsername" placeholder="VD: vana2026"/>
+                <div class="cb-error-msg" id="err-regUsername"></div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label cb-label">Email <span class="text-danger">*</span></label>
                 <input type="email" class="form-control cb-input" id="regEmail" placeholder="ten@gmail.com"/>
                 <div class="cb-error-msg" id="err-regEmail"></div>
               </div>
               <div class="mb-3">
-                <label class="form-label cb-label">Tên đăng nhập (tuỳ chọn)</label>
-                <input type="text" class="form-control cb-input" id="regUsername" placeholder="Bỏ trống sẽ tự tạo từ Gmail/Mã SV"/>
-                <div class="cb-error-msg" id="err-regUsername"></div>
+                <label class="form-label cb-label">Số điện thoại <span class="text-danger">*</span></label>
+                <input type="tel" class="form-control cb-input" id="regPhone" placeholder="0901234567" maxlength="10"/>
+                <div class="cb-error-msg" id="err-regPhone"></div>
               </div>
               <div class="mb-3">
                 <label class="form-label cb-label">Mật khẩu <span class="text-danger">*</span></label>
@@ -588,42 +587,6 @@
   </div>
 </div>
 
-
-<!-- ======== FORGOT PASSWORD MODAL ======== -->
-<div class="modal fade" id="forgotPasswordModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered modal-md">
-    <div class="modal-content cb-modal cb-auth-modal">
-      <div class="cb-auth-header">
-        <div class="cb-auth-logo"><i class="bi bi-key-fill"></i></div>
-        <h5 class="cb-auth-title">Quên mật khẩu</h5>
-        <p class="cb-auth-sub">Gửi yêu cầu tới quản trị viên để xác minh &amp; cấp lại</p>
-        <button type="button" class="btn-close btn-close-white cb-auth-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div class="cb-login-hint cb-login-hint-guest mb-3">
-          <i class="bi bi-info-circle me-2"></i>Nhập Gmail / Tên đăng nhập / Mã SV và số điện thoại để admin xác minh danh tính. Sau khi admin cấp lại mật khẩu, bạn sẽ nhận được <strong>thông báo riêng</strong> trong mục Thông báo.
-        </div>
-        <form id="forgotPasswordForm" novalidate>
-          <div class="mb-3">
-            <label class="form-label cb-label">Gmail / Tên đăng nhập / Mã SV <span class="text-danger">*</span></label>
-            <input type="text" class="form-control cb-input" id="fpIdentifier" placeholder="ten@gmail.com hoặc mã SV"/>
-            <div class="cb-error-msg" id="err-fpIdentifier"></div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label cb-label">Số điện thoại xác minh <span class="text-danger">*</span></label>
-            <input type="text" class="form-control cb-input" id="fpPhone" placeholder="0901234567"/>
-            <div class="cb-error-msg" id="err-fpPhone"></div>
-          </div>
-          <div id="forgotError" class="alert alert-danger py-2 d-none small"></div>
-          <div id="forgotSuccess" class="alert alert-success py-2 d-none small"></div>
-          <button type="submit" class="btn cb-btn-primary w-100 py-2">
-            <i class="bi bi-send-check me-1"></i>Gửi yêu cầu cho Admin
-          </button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- ======== DRINK DETAIL MODAL ======== -->
 <div class="modal fade" id="drinkModal" tabindex="-1">

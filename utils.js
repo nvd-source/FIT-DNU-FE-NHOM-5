@@ -82,6 +82,10 @@ function isValidPhone(phone) {
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 }
+// Họ tên chỉ được chứa chữ cái (kể cả có dấu tiếng Việt) và khoảng trắng
+function isValidName(name) {
+  return /^[a-zA-ZÀ-ỹ]+(\s[a-zA-ZÀ-ỹ]+)*$/.test((name||'').trim());
+}
 
 // ---- Inline error helpers ----
 function showError(fieldId, msg) {
@@ -194,7 +198,7 @@ var USERS = {
   key: 'cbRegisteredUsers',
   // Tài khoản admin mặc định (không lưu localStorage)
   defaults: [
-    { id:'admin-001', username:'ADMIN', password:'123456', role:'admin', name:'Quản trị viên', email:'admin@cafebook.vn', std:'', createdAt:'' }
+    { id:'admin-001', username:'ADMIN', password:'123456', role:'admin', name:'Quản trị viên', email:'admin@cafebook.vn', phone:'', createdAt:'' }
   ],
   getAll: function() {
     try { return JSON.parse(localStorage.getItem(this.key)) || []; } catch(e) { return []; }
@@ -204,13 +208,15 @@ var USERS = {
   },
   // Đăng ký tài khoản mới
   register: function(data) {
-    // data: { name, username, email, std, password }
+    // data: { name, username, email, phone, password }
     var list = this.getAll();
-    // Kiểm tra trùng username hoặc email
+    // Kiểm tra trùng username, email hoặc số điện thoại
     var dup = list.find(function(u) {
-      return u.username === data.username || (data.email && u.email === data.email) || (data.std && u.std === data.std);
+      return u.username.toLowerCase() === (data.username||'').toLowerCase()
+        || (data.email && u.email.toLowerCase() === data.email.toLowerCase())
+        || (data.phone && u.phone === data.phone);
     });
-    if (dup) return { ok: false, msg: 'Tên đăng nhập, email hoặc mã SV đã tồn tại!' };
+    if (dup) return { ok: false, msg: 'Tên đăng nhập, email hoặc số điện thoại đã được sử dụng!' };
     var newUser = {
       id: 'u-' + genId(),
       username: data.username,
@@ -218,14 +224,14 @@ var USERS = {
       role: 'guest',
       name: data.name,
       email: data.email || '',
-      std: data.std || '',
+      phone: data.phone || '',
       createdAt: new Date().toISOString()
     };
     list.push(newUser);
     this.saveAll(list);
     return { ok: true, user: newUser };
   },
-  // Đăng nhập (không phân biệt hoa/thường với username/email/mã SV)
+  // Đăng nhập (không phân biệt hoa/thường với username/email/số điện thoại)
   login: function(usernameOrEmail, password) {
     var key = (usernameOrEmail || '').trim().toLowerCase();
     // Kiểm tra admin mặc định
@@ -237,11 +243,11 @@ var USERS = {
     var list = this.getAll();
     for (var j = 0; j < list.length; j++) {
       var u = list[j];
-      if (((u.username||'').toLowerCase() === key || (u.email||'').toLowerCase() === key || (u.std && u.std.toLowerCase() === key)) && u.password === password) return u;
+      if (((u.username||'').toLowerCase() === key || (u.email||'').toLowerCase() === key || (u.phone && u.phone === key)) && u.password === password) return u;
     }
     return null;
   },
-  // Cấp lại mật khẩu cho 1 user theo id (dùng cho luồng "Quên mật khẩu")
+  // Cấp lại mật khẩu cho 1 user theo id (dùng nội bộ khi cần, không còn luồng "quên mật khẩu" ở giao diện)
   resetPassword: function(userId, newPassword) {
     var list = this.getAll();
     var u = list.find(function(x){ return x.id === userId; });
@@ -250,12 +256,12 @@ var USERS = {
     this.saveAll(list);
     return true;
   },
-  // Tìm user theo username/email/mã SV (không phân biệt hoa thường)
+  // Tìm user theo username/email/số điện thoại (không phân biệt hoa thường)
   findByIdentifier: function(identifier) {
     var key = (identifier || '').trim().toLowerCase();
     var list = this.getAll();
     return list.find(function(u) {
-      return (u.username||'').toLowerCase() === key || (u.email||'').toLowerCase() === key || (u.std && u.std.toLowerCase() === key);
+      return (u.username||'').toLowerCase() === key || (u.email||'').toLowerCase() === key || (u.phone && u.phone === key);
     }) || null;
   }
 };
@@ -266,58 +272,9 @@ function isGmailAddress(email) {
 }
 
 // ============================================================
-// PASSWORD RESET REQUESTS – Khách gửi yêu cầu, Admin xác minh & cấp lại
-// ============================================================
-var RESETREQ = {
-  key: 'cbPasswordResets',
-  getAll: function() {
-    try { return JSON.parse(localStorage.getItem(this.key)) || []; } catch(e) { return []; }
-  },
-  saveAll: function(list) { localStorage.setItem(this.key, JSON.stringify(list)); },
-  // Khách gửi yêu cầu quên mật khẩu
-  create: function(identifier, phone, note) {
-    var user = USERS.findByIdentifier(identifier);
-    if (!user) return { ok:false, msg:'Không tìm thấy tài khoản với thông tin này.' };
-    var list = this.getAll();
-    var req = {
-      id: genId(),
-      userId: user.id,
-      identifier: identifier,
-      name: user.name,
-      phone: phone || '',
-      note: note || '',
-      status: 'pending',
-      createdAt: new Date().toISOString()
-    };
-    list.unshift(req);
-    this.saveAll(list);
-    return { ok:true, request:req };
-  },
-  getPending: function() {
-    return this.getAll().filter(function(r){ return r.status === 'pending'; });
-  },
-  // Admin xác minh & cấp mật khẩu mới ngẫu nhiên
-  approve: function(requestId) {
-    var list = this.getAll();
-    var req = list.find(function(x){ return x.id === requestId; });
-    if (!req) return { ok:false, msg:'Yêu cầu không tồn tại' };
-    var newPass = genId().substr(0, 6);
-    var ok = USERS.resetPassword(req.userId, newPass);
-    if (!ok) return { ok:false, msg:'Không tìm thấy tài khoản để cấp lại mật khẩu' };
-    req.status = 'done';
-    req.resolvedAt = new Date().toISOString();
-    this.saveAll(list);
-    return { ok:true, newPassword:newPass, req:req };
-  },
-  reject: function(requestId) {
-    var list = this.getAll();
-    var req = list.find(function(x){ return x.id === requestId; });
-    if (req) { req.status = 'rejected'; this.saveAll(list); }
-  }
-};
-
-// ============================================================
 // COUPON STORE – quản lý mã giảm giá
+// Ưu đãi chỉ áp dụng cho tài khoản khách đã đăng ký & đăng nhập,
+// và mỗi mã chỉ được dùng TỐI ĐA 1 LẦN / 1 tài khoản khách.
 // ============================================================
 var COUPONS = {
   key: 'cbCoupons',
@@ -339,13 +296,17 @@ var COUPONS = {
   saveAll: function(list) {
     localStorage.setItem(this.key, JSON.stringify(list));
   },
-  // Tìm coupon hợp lệ
-  validate: function(code, subtotal) {
+  // Tìm coupon hợp lệ. userId bắt buộc — chỉ tài khoản khách đã đăng nhập mới dùng được,
+  // và mỗi tài khoản chỉ được dùng 1 mã này đúng 1 lần.
+  validate: function(code, subtotal, userId) {
+    if (!userId) return { ok: false, msg: 'Vui lòng đăng nhập tài khoản khách để dùng mã giảm giá' };
     var list = this.getAll();
     var c = list.find(function(x){ return x.code === (code||'').toUpperCase().trim(); });
     if (!c)            return { ok: false, msg: 'Mã giảm giá không tồn tại' };
     if (!c.active)     return { ok: false, msg: 'Mã giảm giá đã bị vô hiệu hoá' };
     if (c.maxUse && c.used >= c.maxUse) return { ok: false, msg: 'Mã giảm giá đã hết lượt sử dụng' };
+    var usedBy = c.usedBy || [];
+    if (usedBy.indexOf(userId) !== -1) return { ok: false, msg: 'Tài khoản của bạn đã sử dụng mã này rồi (chỉ 1 lần/tài khoản)' };
     if (c.minOrder && subtotal < c.minOrder) return { ok: false, msg: 'Đơn hàng tối thiểu ' + formatPrice(c.minOrder) + ' để dùng mã này' };
     // Tính giá trị giảm
     var discountAmt = 0;
@@ -353,17 +314,23 @@ var COUPONS = {
     else discountAmt = Number(c.discount);
     return { ok: true, coupon: c, discountAmt: discountAmt };
   },
-  // Ghi nhận sử dụng
-  markUsed: function(code) {
+  // Ghi nhận sử dụng — lưu lại userId để đảm bảo mỗi tài khoản chỉ dùng 1 lần
+  markUsed: function(code, userId) {
     var list = this.getAll();
     var c = list.find(function(x){ return x.code === (code||'').toUpperCase().trim(); });
-    if (c) { c.used = (c.used||0) + 1; this.saveAll(list); }
+    if (!c) return;
+    c.used = (c.used||0) + 1;
+    if (userId) {
+      c.usedBy = c.usedBy || [];
+      if (c.usedBy.indexOf(userId) === -1) c.usedBy.push(userId);
+    }
+    this.saveAll(list);
   },
   // Thêm coupon mới (admin)
   add: function(data) {
     var list = this.getAll();
     if (list.find(function(x){ return x.code === data.code; })) return { ok:false, msg:'Mã đã tồn tại' };
-    list.push(Object.assign({}, data, { used:0, createdAt: new Date().toISOString().split('T')[0] }));
+    list.push(Object.assign({}, data, { used:0, usedBy:[], createdAt: new Date().toISOString().split('T')[0] }));
     this.saveAll(list);
     return { ok:true };
   },

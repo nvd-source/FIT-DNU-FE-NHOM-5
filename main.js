@@ -72,10 +72,6 @@ document.addEventListener('DOMContentLoaded', function() {
   var rf = document.getElementById('registerForm');
   if (rf) rf.addEventListener('submit', handleRegister);
 
-  // ── Forgot password form submit ──
-  var fpf = document.getElementById('forgotPasswordForm');
-  if (fpf) fpf.addEventListener('submit', handleForgotPassword);
-
   // ── Booking form submit ──
   var bf = document.getElementById('bookingForm');
   if (bf) bf.addEventListener('submit', handleBooking);
@@ -166,14 +162,28 @@ function closeNavbar() {
 // ===== NAV USER =====
 function updateNavUser() {
   var btn = document.getElementById('loginBtn');
-  if (!btn) return;
-  if (currentUser) {
-    btn.innerHTML = '<i class="bi bi-person-check-fill me-1"></i>' + currentUser.name;
-    btn.onclick = showUserMenu;
-  } else {
-    btn.innerHTML = '<i class="bi bi-person-circle me-1"></i>Đăng nhập';
-    btn.onclick = openLoginModal;
+  if (btn) {
+    if (currentUser) {
+      btn.innerHTML = '<i class="bi bi-person-check-fill me-1"></i>' + currentUser.name;
+      btn.onclick = showUserMenu;
+    } else {
+      btn.innerHTML = '<i class="bi bi-person-circle me-1"></i>Đăng nhập';
+      btn.onclick = openLoginModal;
+    }
   }
+  updateCouponUI();
+}
+
+// Chỉ tài khoản KHÁCH đã đăng ký & đăng nhập mới được dùng mã giảm giá
+function isEligibleForCoupon() {
+  return !!(currentUser && currentUser.role === 'guest');
+}
+
+function updateCouponUI() {
+  var eligible = isEligibleForCoupon();
+  $('#couponLoginHint').toggleClass('d-none', eligible);
+  $('#couponInputGroup').toggleClass('d-none', !eligible);
+  if (!eligible && appliedCoupon) removeCoupon();
 }
 
 function showUserMenu() {
@@ -228,7 +238,7 @@ function switchLoginTab(role) {
     $('#guestAuthTabs').fadeIn(200);
     $('#adminDemoHint').addClass('d-none');
     $('#guestLoginLinks').removeClass('d-none');
-    $('#loginUsername').attr('placeholder', 'email@example.com hoặc mã SV');
+    $('#loginUsername').attr('placeholder', 'email@example.com hoặc SĐT');
     $('#loginBtnLabel').text('Đăng nhập');
   }
   document.getElementById('tabGuest').classList.toggle('active', role === 'guest');
@@ -274,79 +284,49 @@ function handleLoginNew(e) {
 
 function handleRegister(e) {
   e.preventDefault();
-  clearAllErrors(['regName','regEmail','regStd','regUsername','regPassword','regPasswordConfirm']);
+  clearAllErrors(['regName','regUsername','regEmail','regPhone','regPassword','regPasswordConfirm']);
   $('#registerError').addClass('d-none');
   var name  = document.getElementById('regName').value.trim();
-  var email = document.getElementById('regEmail').value.trim();
   var uname = document.getElementById('regUsername').value.trim();
-  var std   = document.getElementById('regStd').value.trim();
+  var email = document.getElementById('regEmail').value.trim();
+  var phone = document.getElementById('regPhone').value.trim();
   var pwd   = document.getElementById('regPassword').value;
   var pwd2  = document.getElementById('regPasswordConfirm').value;
   var valid = true;
 
-  // YC3: bắt buộc Họ tên + (Gmail hợp lệ HOẶC Mã số SV) để tạo tài khoản
-  if (!name || name.length < 2) { showError('regName', 'Họ tên phải có ít nhất 2 ký tự'); valid = false; }
+  // Họ tên: bắt buộc, chỉ chứa chữ cái
+  if (!name)                      { showError('regName', 'Vui lòng nhập họ tên'); valid = false; }
+  else if (!isValidName(name))    { showError('regName', 'Họ tên chỉ được chứa chữ cái, không chứa số hoặc ký tự đặc biệt'); valid = false; }
+  else if (name.trim().length < 2) { showError('regName', 'Họ tên phải có ít nhất 2 ký tự'); valid = false; }
 
-  var hasEmail = !!email;
-  var hasStd   = !!std;
-  if (!hasEmail && !hasStd) {
-    showError('regEmail', 'Nhập Gmail hoặc Mã số SV để đăng ký');
-    showError('regStd', 'Nhập Gmail hoặc Mã số SV để đăng ký');
-    valid = false;
-  } else {
-    if (hasEmail && !isGmailAddress(email)) { showError('regEmail', 'Chỉ chấp nhận email @gmail.com'); valid = false; }
-    if (hasStd && std.length < 4)           { showError('regStd', 'Mã số SV không hợp lệ'); valid = false; }
-  }
+  // Tên tài khoản: bắt buộc
+  if (!uname)               { showError('regUsername', 'Vui lòng nhập tên tài khoản'); valid = false; }
+  else if (uname.length < 3) { showError('regUsername', 'Tên tài khoản ít nhất 3 ký tự'); valid = false; }
 
-  // Tên đăng nhập: nếu bỏ trống sẽ tự tạo từ email/mã SV
-  if (!uname) {
-    uname = (email ? email.split('@')[0] : std) || ('user' + genId().substr(0,4));
-  } else if (uname.length < 3) {
-    showError('regUsername', 'Tên đăng nhập ít nhất 3 ký tự'); valid = false;
-  }
+  // Email: bắt buộc, đúng định dạng
+  if (!email)                    { showError('regEmail', 'Vui lòng nhập email'); valid = false; }
+  else if (!isValidEmail(email)) { showError('regEmail', 'Email không đúng định dạng'); valid = false; }
 
-  if (!pwd || pwd.length < 6)         { showError('regPassword', 'Mật khẩu ít nhất 6 ký tự'); valid = false; }
-  if (pwd !== pwd2)                   { showError('regPasswordConfirm', 'Mật khẩu xác nhận không khớp'); valid = false; }
+  // Số điện thoại: bắt buộc, đúng 10 số
+  if (!phone)                    { showError('regPhone', 'Vui lòng nhập số điện thoại'); valid = false; }
+  else if (!/^[0-9]+$/.test(phone)) { showError('regPhone', 'Số điện thoại chỉ được chứa chữ số'); valid = false; }
+  else if (phone.length !== 10)  { showError('regPhone', 'Số điện thoại phải gồm đúng 10 số'); valid = false; }
+  else if (!isValidPhone(phone)) { showError('regPhone', 'Số điện thoại không hợp lệ (VD: 0901234567)'); valid = false; }
+
+  if (!pwd || pwd.length < 6) { showError('regPassword', 'Mật khẩu ít nhất 6 ký tự'); valid = false; }
+  if (pwd !== pwd2)           { showError('regPasswordConfirm', 'Mật khẩu xác nhận không khớp'); valid = false; }
   if (!valid) return;
 
   $('#registerBtnText').hide(); $('#registerBtnSpinner').show();
   setTimeout(function() {
     $('#registerBtnText').show(); $('#registerBtnSpinner').hide();
-    var result = USERS.register({ name:name, email:email, username:uname, std:std, password:pwd });
+    var result = USERS.register({ name:name, email:email, username:uname, phone:phone, password:pwd });
     if (!result.ok) { $('#registerError').text(result.msg).removeClass('d-none'); return; }
-    $('#registerSuccess').text('✓ Đăng ký thành công! Bạn có thể đăng nhập ngay bằng Gmail/Mã SV vừa tạo.').removeClass('d-none');
+    $('#registerSuccess').text('✓ Đăng ký thành công! Bạn có thể đăng nhập ngay bằng tên tài khoản, email hoặc số điện thoại vừa tạo.').removeClass('d-none');
     document.getElementById('registerForm').reset();
     setTimeout(function() { showAuthMode('login'); }, 1500);
     showToast('Đăng ký thành công! Chào mừng ' + name, 'success');
   }, 700);
-}
-
-// ===== QUÊN MẬT KHẨU =====
-function handleForgotPassword(e) {
-  e.preventDefault();
-  clearAllErrors(['fpIdentifier','fpPhone']);
-  $('#forgotError').addClass('d-none');
-  $('#forgotSuccess').addClass('d-none');
-  var identifier = document.getElementById('fpIdentifier').value.trim();
-  var phone      = document.getElementById('fpPhone').value.trim();
-  var valid = true;
-  if (!identifier) { showError('fpIdentifier', 'Nhập Gmail, tên đăng nhập hoặc mã SV'); valid = false; }
-  if (!phone || !isValidPhone(phone)) { showError('fpPhone', 'Số điện thoại không hợp lệ'); valid = false; }
-  if (!valid) return;
-
-  var result = RESETREQ.create(identifier, phone);
-  if (!result.ok) { $('#forgotError').text(result.msg).removeClass('d-none'); return; }
-
-  $('#forgotSuccess').text('✓ Yêu cầu đã được gửi tới quản trị viên để xác minh. Bạn sẽ nhận mật khẩu mới qua Thông báo sau khi được duyệt.').removeClass('d-none');
-  document.getElementById('forgotPasswordForm').reset();
-  showToast('Đã gửi yêu cầu cấp lại mật khẩu tới Admin', 'success');
-}
-
-function openForgotPassword() {
-  showAuthMode('login');
-  bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
-  var modal = new bootstrap.Modal(document.getElementById('forgotPasswordModal'));
-  modal.show();
 }
 
 function toggleRegPwd() {
@@ -500,14 +480,21 @@ function updateOrderQty(id, delta) {
 
 // ===== COUPON =====
 function applyCoupon() {
-  var code = (document.getElementById('couponInput').value || '').toUpperCase().trim();
   var errEl = document.getElementById('err-coupon');
   if (errEl) errEl.textContent = '';
   $('#couponSuccess').addClass('d-none');
+
+  // Ưu đãi chỉ áp dụng cho tài khoản khách đã đăng ký & đăng nhập
+  if (!isEligibleForCoupon()) {
+    if (errEl) errEl.textContent = 'Vui lòng đăng nhập tài khoản khách để dùng mã giảm giá';
+    return;
+  }
+
+  var code = (document.getElementById('couponInput').value || '').toUpperCase().trim();
   if (!code) { if(errEl) errEl.textContent = 'Vui lòng nhập mã giảm giá'; return; }
   if (!orderCart.length) { if(errEl) errEl.textContent = 'Vui lòng chọn món trước khi áp mã'; return; }
   var totals = calcCartTotals(orderCart);
-  var result = COUPONS.validate(code, totals.subtotal);
+  var result = COUPONS.validate(code, totals.subtotal, currentUser.id);
   if (!result.ok) {
     document.getElementById('err-coupon').textContent = result.msg;
     appliedCoupon = null;
@@ -685,7 +672,7 @@ function placeOrder() {
       ANALYTICS.addOrder(payload.items);
 
       if (appliedCoupon) {
-        COUPONS.markUsed(appliedCoupon.code);
+        COUPONS.markUsed(appliedCoupon.code, currentUser ? currentUser.id : null);
         removeCoupon();
       }
 

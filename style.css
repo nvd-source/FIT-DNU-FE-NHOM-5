@@ -1019,29 +1019,45 @@ a { text-decoration:none; }
    ============================================================ */
 
 /* ── AUTH MODAL ─────────────────────────────────────────── */
-.cb-auth-modal { border-radius: 20px !important; overflow: hidden; }
+.cb-auth-modal { border-radius: 24px !important; overflow: hidden; box-shadow: 0 30px 70px rgba(26,61,47,.35) !important; }
 .cb-auth-header {
   background: linear-gradient(135deg, var(--green-dark) 0%, var(--green-mid) 100%);
-  padding: 28px 24px 20px;
+  padding: 32px 24px 22px;
   text-align: center;
   position: relative;
+  overflow: hidden;
+}
+.cb-auth-header::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: radial-gradient(circle at 15% 20%, rgba(255,255,255,.10) 0, transparent 40%),
+                     radial-gradient(circle at 85% 85%, rgba(255,255,255,.08) 0, transparent 45%);
+  pointer-events: none;
 }
 .cb-auth-close {
   position: absolute !important;
   top: 14px; right: 16px;
+  z-index: 2;
 }
 .cb-auth-logo {
-  width: 56px; height: 56px;
+  width: 60px; height: 60px;
   border-radius: 50%;
-  background: rgba(255,255,255,.15);
-  border: 2px solid rgba(255,255,255,.3);
+  background: rgba(255,255,255,.16);
+  border: 2px solid rgba(255,255,255,.35);
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.5rem; color: var(--green-light);
-  margin: 0 auto 10px;
+  font-size: 1.6rem; color: var(--green-light);
+  margin: 0 auto 12px;
+  position: relative; z-index: 1;
+  box-shadow: 0 8px 24px rgba(0,0,0,.2), inset 0 0 0 6px rgba(255,255,255,.05);
   animation: float 4s ease-in-out infinite;
 }
-.cb-auth-title { color: #fff; font-family: 'Playfair Display', serif; font-size: 1.3rem; margin: 0; }
-.cb-auth-sub { color: rgba(255,255,255,.65); font-size: .8rem; margin: 4px 0 0; }
+.cb-auth-title { color: #fff; font-family: 'Playfair Display', serif; font-size: 1.4rem; margin: 0; position: relative; z-index: 1; }
+.cb-auth-title::after {
+  content: '';
+  display: block; width: 36px; height: 3px; margin: 8px auto 0;
+  background: var(--gold, #e0a458); border-radius: 3px; opacity: .85;
+}
+.cb-auth-sub { color: rgba(255,255,255,.7); font-size: .82rem; margin: 6px 0 0; position: relative; z-index: 1; }
 
 /* Role tabs */
 .cb-auth-role-tabs {
@@ -1092,6 +1108,15 @@ a { text-decoration:none; }
 
 /* ── COUPON FIELD ────────────────────────────────────────── */
 .cb-coupon-wrap { position: relative; }
+.cb-coupon-login-hint {
+  display: flex; align-items: center; gap: 6px;
+  background: linear-gradient(135deg, var(--green-pale), #fff);
+  border: 1px dashed var(--green-light); color: var(--green-dark);
+  border-radius: var(--radius-sm); padding: 9px 12px;
+  font-size: .8rem; font-weight: 500; margin-bottom: 4px;
+}
+.cb-coupon-login-hint a { color: var(--green-main); font-weight: 700; text-decoration: underline; }
+.cb-coupon-login-hint a:hover { color: var(--green-dark); }
 .cb-btn-coupon {
   background: var(--green-main); color: #fff; border: none;
   font-size: .82rem; font-weight: 500; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;

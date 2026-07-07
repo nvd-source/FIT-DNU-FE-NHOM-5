@@ -97,76 +97,9 @@ function showDashboard(user) {
     if (nd) nd.textContent = user.name || 'Admin';
   }
   loadDashboard();
-  updateResetReqBadge();
 }
 
 function adminLogout() { AUTH.logout(); window.location.reload(); }
-
-// ===== PASSWORD RESET REQUESTS (Quên mật khẩu) =====
-function updateResetReqBadge() {
-  var badge = document.getElementById('resetReqCount');
-  if (!badge) return;
-  var n = RESETREQ.getPending().length;
-  badge.textContent = n;
-  badge.style.display = n > 0 ? '' : 'none';
-}
-
-function loadResetRequests() {
-  var list = RESETREQ.getAll();
-  renderResetRequests(list);
-  updateResetReqBadge();
-}
-
-function renderResetRequests(list) {
-  var body  = document.getElementById('resetRequestsTableBody');
-  var empty = document.getElementById('resetRequestsEmpty');
-  if (!body) return;
-  if (!list || !list.length) {
-    body.innerHTML = '';
-    if (empty) empty.classList.remove('d-none');
-    return;
-  }
-  if (empty) empty.classList.add('d-none');
-  var smap = { pending:['cb-status-pending','Chờ xác minh'], done:['cb-status-confirmed','Đã cấp lại'], rejected:['cb-status-cancelled','Đã từ chối'] };
-  var html = '';
-  for (var i = 0; i < list.length; i++) { // YC1: for loop
-    var r  = list[i];
-    var sm = smap[r.status] || smap.pending;
-    html += '<tr>'
-      +'<td>'+(r.name||'')+'</td>'
-      +'<td>'+(r.identifier||'')+'</td>'
-      +'<td>'+(r.phone||'')+'</td>'
-      +'<td>'+formatDate(r.createdAt)+'</td>'
-      +'<td><span class="cb-status '+sm[0]+'">'+sm[1]+'</span></td>'
-      +'<td>'
-      +(r.status === 'pending'
-        ? '<button class="btn btn-sm cb-btn-primary me-1" onclick="approveResetRequest(\''+r.id+'\')"><i class="bi bi-check2 me-1"></i>Xác minh &amp; cấp lại</button>'
-          +'<button class="btn btn-sm btn-outline-danger" onclick="rejectResetRequest(\''+r.id+'\')"><i class="bi bi-x-lg"></i></button>'
-        : '<span class="text-muted small">—</span>')
-      +'</td>'
-      +'</tr>';
-  }
-  body.innerHTML = html;
-}
-
-function approveResetRequest(requestId) {
-  var result = RESETREQ.approve(requestId);
-  if (!result.ok) { showToast(result.msg, 'error'); return; }
-  // Gửi thông báo riêng cho khách với mật khẩu mới
-  NOTIF.add({
-    type: 'info',
-    title: '🔑 Mật khẩu của bạn đã được cấp lại',
-    message: 'Tài khoản (' + result.req.identifier + ') đã được admin xác minh. Mật khẩu mới của bạn là: ' + result.newPassword + '. Vui lòng đổi mật khẩu sau khi đăng nhập.'
-  });
-  showToast('Đã cấp lại mật khẩu mới cho ' + result.req.name, 'success');
-  loadResetRequests();
-}
-
-function rejectResetRequest(requestId) {
-  RESETREQ.reject(requestId);
-  showToast('Đã từ chối yêu cầu', 'warning');
-  loadResetRequests();
-}
 
 // ===== SIDEBAR =====
 function toggleSidebar() {
@@ -200,8 +133,7 @@ function showPage(page) {
     dashboard:'Dashboard', analytics:'Phân tích bán hàng',
     drinks:'Quản lý thực đơn', tables:'Quản lý bàn',
     reservations:'Đặt bàn & Đơn hàng',
-    coupons:'Mã giảm giá', notifications:'Gửi thông báo',
-    resetrequests:'Yêu cầu cấp lại mật khẩu'
+    coupons:'Mã giảm giá', notifications:'Gửi thông báo'
   };
   var ptEl = document.getElementById('pageTitle');
   if (ptEl) ptEl.textContent = titles[page] || page;
@@ -211,7 +143,6 @@ function showPage(page) {
   if (page === 'reservations') loadAdminReservations();
   if (page === 'analytics')    loadAnalytics();
   if (page === 'coupons')      loadCoupons();
-  if (page === 'resetrequests') loadResetRequests();
 
   // Close sidebar on mobile after nav
   if (window.innerWidth < 992) closeSidebar();
